@@ -4,4 +4,5 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="weather_icon">WeatherIcon</string>
+    <string name="temperature_format">Temperature: %1$.1f°C</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.weatherapp.data.api
 
 import com.example.weatherapp.data.model.WeatherResponse
+import com.example.weatherapp.data.model.ForecastResponse
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -18,4 +19,11 @@ interface WeatherApi {
     suspend fun getWeatherIcon(
         @Path("icon") icon: String
     ): ResponseBody
+
+    @GET("data/2.5/forecast")
+    suspend fun getForecast(
+        @Query("q") city: String,
+        @Query("appid") apiKey: String,
+        @Query("units") units: String = "metric"
+    ): ForecastResponse
 } 

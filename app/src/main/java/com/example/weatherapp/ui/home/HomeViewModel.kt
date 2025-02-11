@@ -9,6 +9,7 @@ import com.example.weatherapp.data.api.WeatherApi
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 
 class HomeViewModel : ViewModel() {
     private val _weatherData = MutableLiveData<String>()
@@ -49,11 +50,18 @@ class HomeViewModel : ViewModel() {
                     }
                 }
 
+                val time = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(Date(response.dt * 1000))
+
                 _weatherData.value = """
-                    Miasto: ${response.name}
+                    Miasto: ${response.name}, ${response.sys.country}
+                    Współrzędne: ${response.coord.lat}°N, ${response.coord.lon}°E
+                    Czas: $time
+                    
                     Temperatura: ${response.main.temp}°C
                     Odczuwalna: ${response.main.feels_like}°C
-                    Wilgotność: ${response.main.humidity}%
+                    Ciśnienie: ${response.main.pressure} hPa
+                    
                     Pogoda: ${response.weather.firstOrNull()?.description ?: ""}
                 """.trimIndent()
             } catch (e: Exception) {
