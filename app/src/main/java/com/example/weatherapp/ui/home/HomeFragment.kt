@@ -1,10 +1,11 @@
 package com.example.weatherapp.ui.home
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.databinding.FragmentHomeBinding
@@ -22,16 +23,32 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
+        val homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        homeViewModel.weatherData.observe(viewLifecycleOwner) {
+            binding.textHome.text = it
         }
+
+        homeViewModel.weatherIcon.observe(viewLifecycleOwner) { iconBytes ->
+            val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
+            binding.weatherIcon.setImageBitmap(bitmap)
+        }
+
+        homeViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        homeViewModel.error.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        homeViewModel.fetchWeatherData()
+
         return root
     }
 
