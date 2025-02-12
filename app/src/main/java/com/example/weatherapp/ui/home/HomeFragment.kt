@@ -24,7 +24,7 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        homeViewModel.fetchWeatherData(settingsViewModel.getCity() ?: "Warsaw")
+        homeViewModel.fetchWeatherData("Warsaw")
     }
 
     override fun onCreateView(
@@ -67,8 +67,11 @@ class HomeFragment : Fragment() {
     private fun setupFavoriteButton() {
         binding.favoriteIcon.setOnClickListener {
             if (currentCity.isNotBlank()) {
-                if (currentCity != settingsViewModel.getCity()) {
-                    settingsViewModel.saveSettings(currentCity, settingsViewModel.getUnits())
+                if (currentCity != "Warsaw") {
+                    settingsViewModel.addFavoriteCity("Warsaw")
+                }
+                else {
+                    settingsViewModel.removeFavoriteCity("Warsaw")
                 }
                 updateFavoriteIcon()
             }
@@ -76,7 +79,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateFavoriteIcon() {
-        val isFavorite = currentCity == settingsViewModel.getCity()
+        val isFavorite = settingsViewModel.isCityFavorite(currentCity)
         binding.favoriteIcon.setImageResource(
             if (isFavorite) R.drawable.ic_star_active_24 else R.drawable.ic_star_inactive_24
         )
