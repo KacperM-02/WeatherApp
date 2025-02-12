@@ -1,16 +1,19 @@
 package com.example.weatherapp.ui.dashboard
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherapp.BuildConfig
 import com.example.weatherapp.data.api.WeatherApi
+import com.example.weatherapp.data.model.WeatherResponse
+import com.example.weatherapp.data.preferences.WeatherPreferences
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val _weatherData = MutableLiveData<String>()
     val weatherData: LiveData<String> = _weatherData
 
@@ -19,6 +22,8 @@ class DashboardViewModel : ViewModel() {
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
+
+    private val weatherPreferences = WeatherPreferences(application)
 
     private val weatherApi = Retrofit.Builder()
         .baseUrl("https://api.openweathermap.org/")
@@ -30,25 +35,42 @@ class DashboardViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val response = weatherApi.getWeather(city, BuildConfig.API_KEY)
-
-                val windDirection = getWindDirection(response.wind.deg)
                 
-                _weatherData.value = """
-                    Wiatr:
-                    • Prędkość: ${response.wind.speed} m/s
-                    • Kierunek: $windDirection (${response.wind.deg}°)
-                    • Porywy: ${response.wind.gust ?: "brak danych"} m/s
-                    
-                    Wilgotność: ${response.main.humidity}%
-                    Widoczność: ${response.visibility / 1000.0} km
-                """.trimIndent()
+                weatherPreferences.getWeatherResponse()?.let { response ->
+                    updateWeatherData(response)
+                    if (System.currentTimeMillis() - weatherPreferences.getWeatherTimestamp() > 15 * 60 * 1000) {
+                        fetchFreshData(city)
+                    }
+                } ?: fetchFreshData(city)
+                
             } catch (e: Exception) {
                 _error.value = "Błąd: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    private suspend fun fetchFreshData(city: String) {
+        val response = weatherApi.getWeather(city, BuildConfig.API_KEY)
+        weatherPreferences.saveWeatherResponse(response)
+        updateWeatherData(response)
+    }
+
+    private fun updateWeatherData(response: WeatherResponse) {
+        val windSpeed = response.wind.speed
+        val windDeg = response.wind.deg
+        val windDirection = getWindDirection(windDeg)
+        val visibility = response.visibility / 1000.0 // konwersja na kilometry
+        val clouds = response.clouds.all
+
+        _weatherData.value = """
+            Wiatr: $windSpeed m/s
+            Kierunek wiatru: $windDirection ($windDeg°)
+            Widoczność: $visibility km
+            Zachmurzenie: $clouds%
+            Wilgotność: ${response.main.humidity}%
+        """.trimIndent()
     }
 
     private fun getWindDirection(degrees: Int): String {

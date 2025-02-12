@@ -4,12 +4,17 @@ data class WeatherResponse(
     val coord: Coord,
     val main: Main,
     val weather: List<Weather>,
-    val wind: Wind,
     val visibility: Int,
-    val name: String,
+    val wind: Wind,
+    val clouds: Clouds,
     val dt: Long,
-    val sys: Sys
+    val sys: Sys,
+    val name: String,
 )
+
+class Clouds {
+    val all: Int = 0
+}
 
 data class Coord(
     val lon: Double,
