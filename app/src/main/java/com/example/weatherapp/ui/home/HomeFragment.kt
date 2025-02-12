@@ -8,18 +8,23 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.weatherapp.R
 import com.example.weatherapp.databinding.FragmentHomeBinding
+import com.example.weatherapp.ui.settings.SettingsViewModel
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var homeViewModel: HomeViewModel
+    private lateinit var settingsViewModel: SettingsViewModel
+    private var currentCity: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
-        homeViewModel.fetchWeatherData()
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        homeViewModel.fetchWeatherData(settingsViewModel.getCity() ?: "Warsaw")
     }
 
     override fun onCreateView(
@@ -30,8 +35,17 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        homeViewModel.weatherData.observe(viewLifecycleOwner) {
-            binding.textHome.text = it
+        setupObservers()
+        setupFavoriteButton()
+
+        return root
+    }
+
+    private fun setupObservers() {
+        homeViewModel.weatherData.observe(viewLifecycleOwner) { weatherData ->
+            binding.textHome.text = weatherData
+            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("Miasto: ")?.split(",")?.firstOrNull()?.trim() ?: ""
+            updateFavoriteIcon()
         }
 
         homeViewModel.weatherIcon.observe(viewLifecycleOwner) { iconBytes ->
@@ -48,8 +62,24 @@ class HomeFragment : Fragment() {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
         }
+    }
 
-        return root
+    private fun setupFavoriteButton() {
+        binding.favoriteIcon.setOnClickListener {
+            if (currentCity.isNotBlank()) {
+                if (currentCity != settingsViewModel.getCity()) {
+                    settingsViewModel.saveSettings(currentCity, settingsViewModel.getUnits())
+                }
+                updateFavoriteIcon()
+            }
+        }
+    }
+
+    private fun updateFavoriteIcon() {
+        val isFavorite = currentCity == settingsViewModel.getCity()
+        binding.favoriteIcon.setImageResource(
+            if (isFavorite) R.drawable.ic_star_active_24 else R.drawable.ic_star_inactive_24
+        )
     }
 
     override fun onDestroyView() {

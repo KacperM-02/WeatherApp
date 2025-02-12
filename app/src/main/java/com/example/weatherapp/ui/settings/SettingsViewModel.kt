@@ -17,8 +17,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun getCity(): String {
-        return preferences.getString("city", "Warsaw") ?: "Warsaw"
+    fun getCity(): String? {
+        return preferences.getString("city", null)
     }
 
     fun getUnits(): String {
