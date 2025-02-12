@@ -1,17 +1,20 @@
 package com.example.weatherapp.ui.notifications
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherapp.BuildConfig
 import com.example.weatherapp.data.api.WeatherApi
 import com.example.weatherapp.data.model.ForecastItem
+import com.example.weatherapp.data.model.ForecastResponse
+import com.example.weatherapp.data.preferences.WeatherPreferences
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class NotificationsViewModel : ViewModel() {
+class NotificationsViewModel(application: Application) : AndroidViewModel(application) {
     private val _forecast = MutableLiveData<List<ForecastItem>>()
     val forecast: LiveData<List<ForecastItem>> = _forecast
 
@@ -23,6 +26,8 @@ class NotificationsViewModel : ViewModel() {
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
+
+    private val weatherPreferences = WeatherPreferences(application)
 
     private val weatherApi = Retrofit.Builder()
         .baseUrl("https://api.openweathermap.org/")
@@ -39,27 +44,45 @@ class NotificationsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val response = weatherApi.getForecast(city, BuildConfig.API_KEY)
-                _forecast.value = response.list.filter { 
-                    // Filtruj prognozy co 24h
-                    response.list.indexOf(it) % 8 == 0 
-                }
 
-                // Pobierz ikony dla każdej prognozy
-                response.list.forEach { forecast ->
-                    forecast.weather.firstOrNull()?.icon?.let { icon ->
-                        try {
-                            val iconResponse = iconUrl.getWeatherIcon(icon)
-                            _weatherIcon.value = icon to iconResponse.bytes()
-                        } catch (e: Exception) {
-                            _error.value = "Error loading icon: ${e.message}"
-                        }
+                // Najpierw spróbuj użyć zapisanych danych
+                weatherPreferences.getForecastResponse()?.let { response ->
+                    updateForecastData(response)
+                    // Jeśli dane są starsze niż 15 minut, pobierz nowe
+                    if (System.currentTimeMillis() - weatherPreferences.getForecastTimestamp() > 15 * 60 * 1000) {
+                        fetchFreshForecast(city)
                     }
-                }
+                } ?: fetchFreshForecast(city)
+
             } catch (e: Exception) {
-                _error.value = "Error: ${e.message}"
+                _error.value = "Błąd: ${e.message}"
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    private suspend fun fetchFreshForecast(city: String) {
+        val response = weatherApi.getForecast(city, BuildConfig.API_KEY)
+        weatherPreferences.saveForecastResponse(response)
+        updateForecastData(response)
+    }
+
+    private fun updateForecastData(response: ForecastResponse) {
+        _forecast.value = response.list.filter { 
+            response.list.indexOf(it) % 8 == 0 
+        }
+
+        response.list.forEach { forecast ->
+            forecast.weather.firstOrNull()?.icon?.let { icon ->
+                viewModelScope.launch {
+                    try {
+                        val iconResponse = iconUrl.getWeatherIcon(icon)
+                        _weatherIcon.value = icon to iconResponse.bytes()
+                    } catch (e: Exception) {
+                        _error.value = "Error loading icon: ${e.message}"
+                    }
+                }
             }
         }
     }

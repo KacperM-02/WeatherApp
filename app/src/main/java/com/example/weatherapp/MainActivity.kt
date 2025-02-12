@@ -10,16 +10,30 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.weatherapp.databinding.ActivityMainBinding
+import com.example.weatherapp.data.preferences.WeatherPreferences
+import com.example.weatherapp.data.api.WeatherApi
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var weatherPreferences: WeatherPreferences
+    private val weatherApi = Retrofit.Builder()
+        .baseUrl("https://api.openweathermap.org/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(WeatherApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        weatherPreferences = WeatherPreferences(this)
 
         val navView: BottomNavigationView = binding.navView
 
@@ -31,6 +45,24 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        fetchInitialData()
+    }
+
+    private fun fetchInitialData() {
+        lifecycleScope.launch {
+            try {
+                // Pobierz dane pogodowe
+                val weatherResponse = weatherApi.getWeather("Warsaw", BuildConfig.API_KEY)
+                weatherPreferences.saveWeatherResponse(weatherResponse)
+
+                // Pobierz prognozę
+                val forecastResponse = weatherApi.getForecast("Warsaw", BuildConfig.API_KEY)
+                weatherPreferences.saveForecastResponse(forecastResponse)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Błąd pobierania danych: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
