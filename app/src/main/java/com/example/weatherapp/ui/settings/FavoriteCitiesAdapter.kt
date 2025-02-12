@@ -1,5 +1,6 @@
 package com.example.weatherapp.ui.settings
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ class FavoriteCitiesAdapter : RecyclerView.Adapter<FavoriteCitiesAdapter.ViewHol
 
     override fun getItemCount() = cities.size
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateCities(newCities: List<String>) {
         cities = newCities
         notifyDataSetChanged()
