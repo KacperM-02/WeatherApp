@@ -6,4 +6,10 @@
     <string name="title_settings">Settings</string>
     <string name="weather_icon">WeatherIcon</string>
     <string name="temperature_format">Temperature: %1$.1f°C</string>
+    <string name="miasto">Miasto</string>
+    <string name="jednostki_miary">Jednostki miary</string>
+    <string name="standard">Standard</string>
+    <string name="metric">Metric</string>
+    <string name="imperial">Imperial</string>
+    <string name="zapisz">Zapisz</string>
 </resources>
