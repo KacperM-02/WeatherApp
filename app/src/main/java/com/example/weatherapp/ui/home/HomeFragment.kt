@@ -67,11 +67,11 @@ class HomeFragment : Fragment() {
     private fun setupFavoriteButton() {
         binding.favoriteIcon.setOnClickListener {
             if (currentCity.isNotBlank()) {
-                if (currentCity != "Warsaw") {
-                    settingsViewModel.addFavoriteCity("Warsaw")
+                if (!settingsViewModel.isCityFavorite(currentCity)) {
+                    settingsViewModel.addFavoriteCity(currentCity)
                 }
                 else {
-                    settingsViewModel.removeFavoriteCity("Warsaw")
+                    settingsViewModel.removeFavoriteCity(currentCity)
                 }
                 updateFavoriteIcon()
             }
