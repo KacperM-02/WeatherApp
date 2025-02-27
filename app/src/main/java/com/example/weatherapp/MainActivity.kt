@@ -17,6 +17,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import android.content.Intent
+import com.example.weatherapp.ui.settings.SettingsActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -73,8 +75,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.navigation_settings -> {
-                findNavController(R.id.nav_host_fragment_activity_main)
-                    .navigate(R.id.navigation_settings)
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)

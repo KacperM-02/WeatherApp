@@ -8,19 +8,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.databinding.FragmentDashboardBinding
-import com.example.weatherapp.ui.settings.SettingsViewModel
 
 class DashboardFragment : Fragment() {
-
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     private lateinit var dashboardViewModel: DashboardViewModel
-    private lateinit var settingsViewModel: SettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
         dashboardViewModel.fetchWeatherData("Warsaw")
     }
 
