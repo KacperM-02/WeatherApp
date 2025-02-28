@@ -69,7 +69,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun updateWeatherData(response: WeatherResponse) {
-        // Pobierz ikonę
         response.weather.firstOrNull()?.icon?.let { icon ->
             viewModelScope.launch {
                 try {

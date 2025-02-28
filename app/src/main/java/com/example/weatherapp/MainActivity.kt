@@ -54,11 +54,9 @@ class MainActivity : AppCompatActivity() {
     private fun fetchInitialData() {
         lifecycleScope.launch {
             try {
-                // Pobierz dane pogodowe
                 val weatherResponse = weatherApi.getWeather("Warsaw", BuildConfig.API_KEY)
                 weatherPreferences.saveWeatherResponse(weatherResponse)
 
-                // Pobierz prognozę
                 val forecastResponse = weatherApi.getForecast("Warsaw", BuildConfig.API_KEY)
                 weatherPreferences.saveForecastResponse(forecastResponse)
             } catch (e: Exception) {

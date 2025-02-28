@@ -1,0 +1,22 @@
+[
+  {
+    "id": 833,
+    "name": "Test",
+    "state": "",
+    "country": "IR",
+    "coord": {
+      "lon": 47.159401,
+      "lat": 34.330502
+    }
+  },
+  {
+    "id": 2960,
+    "name": "Test2",
+    "state": "",
+    "country": "SY",
+    "coord": {
+      "lon": 36.321911,
+      "lat": 34.940079
+    }
+  }
+]
