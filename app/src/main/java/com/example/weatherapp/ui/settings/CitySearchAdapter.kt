@@ -33,9 +33,9 @@ class CitySearchAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setFilteredList(citiesList: List<CityData>)
+    fun updateCitiesList(newCitiesList: List<CityData>)
     {
-        this.citiesList = citiesList
+        this.citiesList = newCitiesList
         notifyDataSetChanged()
     }
 

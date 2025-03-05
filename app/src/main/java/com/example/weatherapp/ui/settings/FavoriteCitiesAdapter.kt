@@ -8,9 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 
-class FavoriteCitiesAdapter : RecyclerView.Adapter<FavoriteCitiesAdapter.ViewHolder>() {
-    private var cities: List<String> = emptyList()
-
+class FavoriteCitiesAdapter(private var cities: List<String>) : RecyclerView.Adapter<FavoriteCitiesAdapter.ViewHolder>() {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val cityName: TextView = view.findViewById(R.id.cityName)
     }

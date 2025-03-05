@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-//        fetchInitialData()
+        fetchInitialData()
     }
 
     private fun fetchInitialData() {

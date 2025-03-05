@@ -53,7 +53,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
                         searchRV.visibility = View.GONE
                         Toast.makeText(this@SettingsActivity, "No Data found", Toast.LENGTH_SHORT).show()
                     } else {
-                        citySearchAdapter.setFilteredList(filteredCities)
+                        citySearchAdapter.updateCitiesList(filteredCities)
                         searchRV.visibility = View.VISIBLE
                     }
                 }
@@ -114,7 +114,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     }
 
     private fun setupRecyclerView() {
-        favoriteCitiesAdapter = FavoriteCitiesAdapter()
+        favoriteCitiesAdapter = FavoriteCitiesAdapter(emptyList())
         binding.favoriteCitiesList.apply {
             adapter = favoriteCitiesAdapter
             layoutManager = LinearLayoutManager(this@SettingsActivity)
