@@ -1,4 +1,4 @@
-package com.example.weatherapp.ui.notifications
+package com.example.weatherapp.ui.weather_forecast
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class NotificationsViewModel(application: Application) : AndroidViewModel(application) {
+class WeatherForecastViewModel(application: Application) : AndroidViewModel(application) {
     private val _forecast = MutableLiveData<List<ForecastItem>>()
     val forecast: LiveData<List<ForecastItem>> = _forecast
 

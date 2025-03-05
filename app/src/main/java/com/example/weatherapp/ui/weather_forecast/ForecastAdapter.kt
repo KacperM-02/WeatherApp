@@ -1,5 +1,6 @@
-package com.example.weatherapp.ui.notifications
+package com.example.weatherapp.ui.weather_forecast
 
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -14,11 +15,13 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
     private var items = listOf<ForecastItem>()
     private var icons = mutableMapOf<String, ByteArray>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun submitList(newItems: List<ForecastItem>) {
         items = newItems
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun submitIcon(iconCode: String, iconBytes: ByteArray) {
         icons[iconCode] = iconBytes
         notifyDataSetChanged()

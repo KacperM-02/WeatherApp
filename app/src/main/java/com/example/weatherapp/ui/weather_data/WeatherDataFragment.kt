@@ -1,4 +1,4 @@
-package com.example.weatherapp.ui.home
+package com.example.weatherapp.ui.weather_data
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -9,22 +9,22 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.R
-import com.example.weatherapp.databinding.FragmentHomeBinding
+import com.example.weatherapp.databinding.FragmentWeatherDataBinding
 import com.example.weatherapp.ui.settings.SettingsViewModel
 
-class HomeFragment : Fragment() {
+class WeatherDataFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: FragmentWeatherDataBinding? = null
     private val binding get() = _binding!!
-    private lateinit var homeViewModel: HomeViewModel
+    private lateinit var weatherDataViewModel: WeatherDataViewModel
     private lateinit var settingsViewModel: SettingsViewModel
     private var currentCity: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        weatherDataViewModel = ViewModelProvider(this)[WeatherDataViewModel::class.java]
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        homeViewModel.fetchWeatherData(756135)
+        weatherDataViewModel.fetchWeatherData(756135)
     }
 
     override fun onCreateView(
@@ -32,7 +32,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         setupObservers()
@@ -42,22 +42,22 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        homeViewModel.weatherData.observe(viewLifecycleOwner) { weatherData ->
+        weatherDataViewModel.weatherData.observe(viewLifecycleOwner) { weatherData ->
             binding.textHome.text = weatherData
             currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("Miasto: ")?.split(",")?.firstOrNull()?.trim() ?: ""
             updateFavoriteIcon()
         }
 
-        homeViewModel.weatherIcon.observe(viewLifecycleOwner) { iconBytes ->
+        weatherDataViewModel.weatherIcon.observe(viewLifecycleOwner) { iconBytes ->
             val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
             binding.weatherIcon.setImageBitmap(bitmap)
         }
 
-        homeViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        weatherDataViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        homeViewModel.error.observe(viewLifecycleOwner) { error ->
+        weatherDataViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }

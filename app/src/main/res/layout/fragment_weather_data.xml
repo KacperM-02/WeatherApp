@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".ui.weather_data.WeatherDataFragment">
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:src="@drawable/ic_star_inactive_24"
-        android:contentDescription="@string/favorite_icon" />
+        android:contentDescription="@string/favourite_icon" />
 
     <ImageView
         android:id="@+id/weatherIcon"

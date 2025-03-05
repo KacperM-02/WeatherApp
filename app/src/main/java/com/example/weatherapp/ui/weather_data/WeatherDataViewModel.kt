@@ -1,4 +1,4 @@
-package com.example.weatherapp.ui.dashboard
+package com.example.weatherapp.ui.weather_data
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -12,10 +12,14 @@ import com.example.weatherapp.data.preferences.WeatherPreferences
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 
-class DashboardViewModel(application: Application) : AndroidViewModel(application) {
+class WeatherDataViewModel(application: Application) : AndroidViewModel(application) {
     private val _weatherData = MutableLiveData<String>()
     val weatherData: LiveData<String> = _weatherData
+
+    private val _weatherIcon = MutableLiveData<ByteArray>()
+    val weatherIcon: LiveData<ByteArray> = _weatherIcon
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -31,13 +35,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         .build()
         .create(WeatherApi::class.java)
 
+    private val iconUrl = Retrofit.Builder()
+        .baseUrl("https://openweathermap.org/")
+        .build()
+        .create(WeatherApi::class.java)
+
     fun fetchWeatherData(cityId: Int = 756135) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 
+                // Najpierw spróbuj użyć zapisanych danych
                 weatherPreferences.getWeatherResponse()?.let { response ->
                     updateWeatherData(response)
+                    // Jeśli dane są starsze niż 15 minut, pobierz nowe
                     if (System.currentTimeMillis() - weatherPreferences.getWeatherTimestamp() > 15 * 60 * 1000) {
                         fetchFreshData(cityId)
                     }
@@ -58,32 +69,30 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun updateWeatherData(response: WeatherResponse) {
-        val windSpeed = response.wind.speed
-        val windDeg = response.wind.deg
-        val windDirection = getWindDirection(windDeg)
-        val visibility = response.visibility / 1000.0 // konwersja na kilometry
-        val clouds = response.clouds.all
+        response.weather.firstOrNull()?.icon?.let { icon ->
+            viewModelScope.launch {
+                try {
+                    val iconResponse = iconUrl.getWeatherIcon(icon)
+                    _weatherIcon.value = iconResponse.bytes()
+                } catch (e: Exception) {
+                    _error.value = "Błąd pobierania ikony: ${e.message}"
+                }
+            }
+        }
+
+        val time = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
+            .format(Date(response.dt * 1000))
 
         _weatherData.value = """
-            Wiatr: $windSpeed m/s
-            Kierunek wiatru: $windDirection ($windDeg°)
-            Widoczność: $visibility km
-            Zachmurzenie: $clouds%
-            Wilgotność: ${response.main.humidity}%
+            City: ${response.name}, ${response.sys.country}
+            Coordinates: ${response.coord.lat}°N, ${response.coord.lon}°E
+            Time: $time
+            
+            Temperature: ${response.main.temp}°C
+            Feels like: ${response.main.feels_like}°C
+            Pressure: ${response.main.pressure} hPa
+            
+            Description: ${response.weather.firstOrNull()?.description ?: ""}
         """.trimIndent()
-    }
-
-    private fun getWindDirection(degrees: Int): String {
-        return when (degrees) {
-            in 337..360, in 0..22 -> "N"
-            in 23..67 -> "NE"
-            in 68..112 -> "E"
-            in 113..157 -> "SE"
-            in 158..202 -> "S"
-            in 203..247 -> "SW"
-            in 248..292 -> "W"
-            in 293..336 -> "NW"
-            else -> "N"
-        }
     }
 }
