@@ -6,6 +6,7 @@ import android.util.JsonReader
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -16,15 +17,16 @@ import com.example.weatherapp.databinding.ActivitySettingsBinding
 import com.example.weatherapp.data.model.CityData
 import java.io.InputStreamReader
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener {
     private lateinit var searchV : SearchView
     private lateinit var searchRV : RecyclerView
+    private lateinit var cityTV: TextView
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var viewModel: SettingsViewModel
 
     private lateinit var favoriteCitiesAdapter: FavoriteCitiesAdapter
-    private lateinit var citiesAdapter: CitiesAdapter
+    private lateinit var citySearchAdapter: CitySearchAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +53,7 @@ class SettingsActivity : AppCompatActivity() {
                         searchRV.visibility = View.GONE
                         Toast.makeText(this@SettingsActivity, "No Data found", Toast.LENGTH_SHORT).show()
                     } else {
-                        citiesAdapter.setFilteredList(filteredCities)
+                        citySearchAdapter.setFilteredList(filteredCities)
                         searchRV.visibility = View.VISIBLE
                     }
                 }
@@ -68,6 +70,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupBindings() {
         searchV = binding.searchView
         searchRV = binding.searchRecyclerView
+        cityTV = binding.chosenCity
     }
 
     fun loadFilteredUniqueCities(context: Context, filter: String): ArrayList<CityData> {
@@ -119,9 +122,11 @@ class SettingsActivity : AppCompatActivity() {
 
         searchRV.visibility = View.GONE
         searchRV.setHasFixedSize(true)
-        searchRV.layoutManager = LinearLayoutManager(this@SettingsActivity)
-        citiesAdapter = CitiesAdapter(ArrayList())
-        searchRV.adapter = citiesAdapter
+        citySearchAdapter = CitySearchAdapter(ArrayList(), this)
+        binding.searchRecyclerView.apply {
+            adapter = citySearchAdapter
+            layoutManager = LinearLayoutManager(this@SettingsActivity)
+        }
     }
 
     private fun setupRadioGroup() {
@@ -156,5 +161,9 @@ class SettingsActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    
+    override fun onCityClick(city: CityData) {
+        cityTV.text = city.name
     }
 } 

@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose a city:"
+        android:text="@string/choose_city"
         android:textStyle="bold"
         android:textSize="16sp"
         android:layout_marginBottom="8dp"/>
@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"
-        android:queryHint="Search Programming language"
+        android:queryHint="Search..."
         android:layout_marginBottom="8dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -31,14 +31,13 @@
         android:id="@+id/chosenCity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CITY"
         android:layout_marginBottom="18dp"/>
 
     <TextView
         android:id="@+id/favoriteCitiesLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/ulubione_miasta"
+        android:text="@string/favourite_cities"
         android:textStyle="bold"
         android:textSize="16sp"
         android:layout_marginBottom="8dp"/>
@@ -52,7 +51,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/jednostki_miary"
+        android:text="@string/units"
         android:textStyle="bold"
         android:textSize="16sp"
         android:layout_marginTop="16dp"
