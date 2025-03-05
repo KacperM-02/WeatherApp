@@ -17,7 +17,7 @@ class DashboardFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
-        dashboardViewModel.fetchWeatherData("Warsaw")
+        dashboardViewModel.fetchWeatherData(756135)
     }
 
     override fun onCreateView(

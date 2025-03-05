@@ -21,7 +21,6 @@ import android.content.Intent
 import com.example.weatherapp.ui.settings.SettingsActivity
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherPreferences: WeatherPreferences
     private val weatherApi = Retrofit.Builder()
@@ -38,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         weatherPreferences = WeatherPreferences(this)
 
         val navView: BottomNavigationView = binding.navView
-
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -47,17 +45,16 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-        fetchInitialData()
+//        fetchInitialData()
     }
 
     private fun fetchInitialData() {
         lifecycleScope.launch {
             try {
-                val weatherResponse = weatherApi.getWeather("Warsaw", BuildConfig.API_KEY)
+                val weatherResponse = weatherApi.getWeather(756135, BuildConfig.API_KEY)
                 weatherPreferences.saveWeatherResponse(weatherResponse)
 
-                val forecastResponse = weatherApi.getForecast("Warsaw", BuildConfig.API_KEY)
+                val forecastResponse = weatherApi.getForecast(756135, BuildConfig.API_KEY)
                 weatherPreferences.saveForecastResponse(forecastResponse)
             } catch (e: Exception) {
                 Toast.makeText(this@MainActivity, "Błąd pobierania danych: ${e.message}", Toast.LENGTH_SHORT).show()

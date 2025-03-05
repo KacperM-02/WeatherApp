@@ -24,7 +24,7 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        homeViewModel.fetchWeatherData("Warsaw")
+        homeViewModel.fetchWeatherData(756135)
     }
 
     override fun onCreateView(

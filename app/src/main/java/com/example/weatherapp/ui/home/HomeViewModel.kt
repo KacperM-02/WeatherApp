@@ -40,7 +40,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         .build()
         .create(WeatherApi::class.java)
 
-    fun fetchWeatherData(city: String = "Warsaw") {
+    fun fetchWeatherData(cityId: Int = 756135) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -50,9 +50,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     updateWeatherData(response)
                     // Jeśli dane są starsze niż 15 minut, pobierz nowe
                     if (System.currentTimeMillis() - weatherPreferences.getWeatherTimestamp() > 15 * 60 * 1000) {
-                        fetchFreshData(city)
+                        fetchFreshData(cityId)
                     }
-                } ?: fetchFreshData(city)
+                } ?: fetchFreshData(cityId)
                 
             } catch (e: Exception) {
                 _error.value = "Błąd: ${e.message}"
@@ -62,8 +62,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private suspend fun fetchFreshData(city: String) {
-        val response = weatherApi.getWeather(city, BuildConfig.API_KEY)
+    private suspend fun fetchFreshData(cityId: Int) {
+        val response = weatherApi.getWeather(cityId, BuildConfig.API_KEY)
         weatherPreferences.saveWeatherResponse(response)
         updateWeatherData(response)
     }
