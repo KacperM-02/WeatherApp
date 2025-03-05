@@ -1,5 +1,6 @@
 package com.example.weatherapp
 
+import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -18,6 +19,8 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import com.example.weatherapp.ui.settings.SettingsActivity
 
 class MainActivity : AppCompatActivity() {
@@ -48,7 +51,44 @@ class MainActivity : AppCompatActivity() {
         fetchInitialData()
     }
 
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        
+        return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+               networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
     private fun fetchInitialData() {
+        val lastFetchTime = weatherPreferences.getWeatherTimestamp()
+        val currentTime = System.currentTimeMillis()
+        val isInternetAvailable = isInternetAvailable()
+        val weatherPreferences = weatherPreferences.getWeatherResponse()
+
+        if (isInternetAvailable) {
+            if (currentTime - lastFetchTime > 15 * 60 * 1000) {
+                saveData()
+                return
+            }
+        }
+
+        if (isInternetAvailable) {
+            if (weatherPreferences == null) saveData()
+            return
+        }
+        Toast.makeText(this, "No internet connection.", Toast.LENGTH_SHORT).show()
+
+        if (weatherPreferences == null)
+        {
+            Toast.makeText(this, "No data available.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (currentTime - lastFetchTime > 15 * 60 * 1000) Toast.makeText(this, "Data is outdated.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun saveData()
+    {
         lifecycleScope.launch {
             try {
                 val weatherResponse = weatherApi.getWeather(756135, BuildConfig.API_KEY)
@@ -57,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 val forecastResponse = weatherApi.getForecast(756135, BuildConfig.API_KEY)
                 weatherPreferences.saveForecastResponse(forecastResponse)
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Błąd pobierania danych: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Error fetching data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
