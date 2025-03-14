@@ -9,6 +9,7 @@ data class WeatherResponse(
     val clouds: Clouds,
     val dt: Long,
     val sys: Sys,
+    val id: Int,
     val name: String,
 )
 
