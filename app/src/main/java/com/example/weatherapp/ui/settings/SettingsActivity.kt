@@ -3,10 +3,10 @@ package com.example.weatherapp.ui.settings
 import android.content.Context
 import android.os.Bundle
 import android.util.JsonReader
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -15,18 +15,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivitySettingsBinding
 import com.example.weatherapp.data.model.CityData
+import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import java.io.InputStreamReader
 
 class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener {
     private lateinit var searchV : SearchView
     private lateinit var searchRV : RecyclerView
-    private lateinit var cityTV: TextView
 
     private lateinit var binding: ActivitySettingsBinding
-    private lateinit var viewModel: SettingsViewModel
+    private lateinit var settingsViewModel: SettingsViewModel
 
     private lateinit var favoriteCitiesAdapter: FavoriteCitiesAdapter
     private lateinit var citySearchAdapter: CitySearchAdapter
+
+    private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,11 +39,16 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.title_settings)
 
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        settingsViewModel.favoriteCities.observe(this) { cities ->
+            favoriteCitiesAdapter.updateCities(cities)
+        }
+
+        weatherSettingsPreferences = WeatherSettingsPreferences(this)
+
         setupBindings()
-        setupViewModel()
         setupRecyclerView()
         setupRadioGroup()
-        observeData()
         setupSearchView()
     }
 
@@ -70,14 +78,13 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     private fun setupBindings() {
         searchV = binding.searchView
         searchRV = binding.searchRecyclerView
-        cityTV = binding.chosenCity
     }
 
     fun loadFilteredUniqueCities(context: Context, filter: String): ArrayList<CityData> {
         val filteredCities = ArrayList<CityData>()
         val seenNames = mutableSetOf<String>()
 
-        context.assets.open("city.list.json").use { inputStream ->
+        context.assets.open("city_list.json").use { inputStream ->
             InputStreamReader(inputStream, "UTF-8").use { isr ->
                 JsonReader(isr).use { reader ->
                     reader.beginArray()  // Rozpoczęcie czytania tablicy JSON
@@ -109,10 +116,6 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         return filteredCities
     }
 
-    private fun setupViewModel() {
-        viewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-    }
-
     private fun setupRecyclerView() {
         favoriteCitiesAdapter = FavoriteCitiesAdapter(emptyList())
         binding.favoriteCitiesList.apply {
@@ -130,7 +133,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     }
 
     private fun setupRadioGroup() {
-        when (viewModel.getUnits()) {
+        when (weatherSettingsPreferences.getUnits()) {
             "standard" -> binding.standardUnits.isChecked = true
             "metric" -> binding.metricUnits.isChecked = true
             "imperial" -> binding.imperialUnits.isChecked = true
@@ -143,13 +146,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
                 binding.imperialUnits.id -> "imperial"
                 else -> "metric"
             }
-            viewModel.saveUnits(units)
-        }
-    }
-
-    private fun observeData() {
-        viewModel.favoriteCities.observe(this) { cities ->
-            favoriteCitiesAdapter.updateCities(cities)
+            weatherSettingsPreferences.saveUnits(units)
         }
     }
 
@@ -163,7 +160,8 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         }
     }
     
-    override fun onCityClick(city: CityData) {
-        cityTV.text = city.name
+    override fun onCityClick(cityId: Int) {
+        settingsViewModel.setChosenCityId(cityId)
+        Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
     }
 } 

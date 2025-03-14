@@ -44,4 +44,8 @@ class WeatherPreferences(context: Context) {
     fun getForecastTimestamp(): Long {
         return preferences.getLong("forecast_timestamp", 0)
     }
-} 
+
+    fun getCityId(): Int {
+        return preferences.getInt("id", 756135)
+    }
+}

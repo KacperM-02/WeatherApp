@@ -2,6 +2,7 @@ package com.example.weatherapp.ui.weather_data
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +14,6 @@ import com.example.weatherapp.databinding.FragmentWeatherDataBinding
 import com.example.weatherapp.ui.settings.SettingsViewModel
 
 class WeatherDataFragment : Fragment() {
-
     private var _binding: FragmentWeatherDataBinding? = null
     private val binding get() = _binding!!
     private lateinit var weatherDataViewModel: WeatherDataViewModel
@@ -23,8 +23,7 @@ class WeatherDataFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         weatherDataViewModel = ViewModelProvider(this)[WeatherDataViewModel::class.java]
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        weatherDataViewModel.fetchWeatherData(756135)
+        settingsViewModel = ViewModelProvider(requireActivity())[SettingsViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -44,7 +43,7 @@ class WeatherDataFragment : Fragment() {
     private fun setupObservers() {
         weatherDataViewModel.weatherData.observe(viewLifecycleOwner) { weatherData ->
             binding.textHome.text = weatherData
-            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("Miasto: ")?.split(",")?.firstOrNull()?.trim() ?: ""
+            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ")?.split(",")?.firstOrNull()?.trim() ?: ""
             updateFavoriteIcon()
         }
 
@@ -61,6 +60,12 @@ class WeatherDataFragment : Fragment() {
             error?.let {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
+        }
+
+        Log.d("WeatherDataFragment", "setupObservers(): called")
+        settingsViewModel.chosenCityId.observe(viewLifecycleOwner) { cityId ->
+            weatherDataViewModel.fetchWeatherData(cityId)
+            Log.d("WeatherDataFragment", "setupObservers(): cityID: $cityId")
         }
     }
 

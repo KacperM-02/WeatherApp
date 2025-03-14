@@ -1,28 +1,26 @@
 package com.example.weatherapp.ui.settings
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.weatherapp.data.preferences.WeatherPreferences
+import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val preferences = application.getSharedPreferences("weather_settings", Application.MODE_PRIVATE)
-    private val gson = Gson()
+    private val weatherSettingsPreferences = WeatherSettingsPreferences(application)
+    private val weatherPreferences = WeatherPreferences(application)
     private val _favoriteCities = MutableLiveData<List<String>>()
     val favoriteCities: LiveData<List<String>> = _favoriteCities
+    private val _chosenCityId = MutableLiveData<Int>()
+    val chosenCityId: LiveData<Int> = _chosenCityId
 
     init {
-        loadFavoriteCities()
-    }
-
-    private fun loadFavoriteCities() {
-        val citiesJson = preferences.getString("favorite_cities", "[]")
-        val type = object : TypeToken<List<String>>() {}.type
-        _favoriteCities.value = gson.fromJson(citiesJson, type)
+        _favoriteCities.value = weatherSettingsPreferences.loadFavoriteCities()
+        _chosenCityId.value = weatherPreferences.getCityId()
     }
 
     fun addFavoriteCity(city: String) {
@@ -43,10 +41,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     private fun saveFavoriteCities(cities: List<String>) {
         viewModelScope.launch {
-            val citiesJson = gson.toJson(cities)
-            preferences.edit()
-                .putString("favorite_cities", citiesJson)
-                .apply()
+            weatherSettingsPreferences.saveFavoriteCities(cities)
             _favoriteCities.value = cities
         }
     }
@@ -55,15 +50,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         return _favoriteCities.value?.contains(city) == true
     }
 
-    fun getUnits(): String {
-        return preferences.getString("units", "metric") ?: "metric"
+    fun setChosenCityId(cityId: Int) {
+        _chosenCityId.value = cityId
+        Log.d("SettingsViewModel", "setChosenCityId: Chosen city ID: $cityId")
     }
-
-    fun saveUnits(units: String) {
-        viewModelScope.launch {
-            preferences.edit()
-                .putString("units", units)
-                .apply()
-        }
-    }
-} 
+}

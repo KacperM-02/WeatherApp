@@ -23,7 +23,7 @@ data class Coord(
 
 data class Main(
     val temp: Double,
-    val feels_like: Double,
+    val feelsLike: Double,
     val humidity: Int,
     val pressure: Int
 )
