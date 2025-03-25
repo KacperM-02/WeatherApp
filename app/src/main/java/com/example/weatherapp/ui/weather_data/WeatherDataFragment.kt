@@ -11,19 +11,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.example.weatherapp.databinding.FragmentWeatherDataBinding
-import com.example.weatherapp.ui.settings.SettingsViewModel
 
 class WeatherDataFragment : Fragment() {
     private var _binding: FragmentWeatherDataBinding? = null
     private val binding get() = _binding!!
-    private lateinit var weatherDataViewModel: WeatherDataViewModel
-    private lateinit var settingsViewModel: SettingsViewModel
+    private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
     private var currentCity: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        weatherDataViewModel = ViewModelProvider(this)[WeatherDataViewModel::class.java]
-        settingsViewModel = ViewModelProvider(requireActivity())[SettingsViewModel::class.java]
+        setupObservers()
     }
 
     override fun onCreateView(
@@ -33,10 +30,7 @@ class WeatherDataFragment : Fragment() {
     ): View {
         _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
-        setupObservers()
-        setupFavoriteButton()
-
+//        setupFavoriteButton()
         return root
     }
 
@@ -57,8 +51,8 @@ class WeatherDataFragment : Fragment() {
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        weatherDataViewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let {
+        val errorObserver = Observer<String> { error ->
+            error.let {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
         }
@@ -69,26 +63,26 @@ class WeatherDataFragment : Fragment() {
         weatherDataViewModel.error.observe(requireActivity(), errorObserver)
     }
 
-    private fun setupFavoriteButton() {
-        binding.favoriteIcon.setOnClickListener {
-            if (currentCity.isNotBlank()) {
-                if (!settingsViewModel.isCityFavorite(currentCity)) {
-                    settingsViewModel.addFavoriteCity(currentCity)
-                }
-                else {
-                    settingsViewModel.removeFavoriteCity(currentCity)
-                }
-                updateFavoriteIcon()
-            }
-        }
-    }
-
-    private fun updateFavoriteIcon() {
-        val isFavorite = settingsViewModel.isCityFavorite(currentCity)
-        binding.favoriteIcon.setImageResource(
-            if (isFavorite) R.drawable.ic_star_active_24 else R.drawable.ic_star_inactive_24
-        )
-    }
+//    private fun setupFavoriteButton() {
+//        binding.favoriteIcon.setOnClickListener {
+//            if (currentCity.isNotBlank()) {
+//                if (!settingsViewModel.isCityFavorite(currentCity)) {
+//                    settingsViewModel.addFavoriteCity(currentCity)
+//                }
+//                else {
+//                    settingsViewModel.removeFavoriteCity(currentCity)
+//                }
+//                updateFavoriteIcon()
+//            }
+//        }
+//    }
+//
+//    private fun updateFavoriteIcon() {
+//        val isFavorite = settingsViewModel.isCityFavorite(currentCity)
+//        binding.favoriteIcon.setImageResource(
+//            if (isFavorite) R.drawable.ic_star_active_24 else R.drawable.ic_star_inactive_24
+//        )
+//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
