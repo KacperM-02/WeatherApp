@@ -115,5 +115,7 @@ class WeatherDataViewModel(application: Application) : AndroidViewModel(applicat
             
             Description: ${response.weather.firstOrNull()?.description ?: ""}
         """.trimIndent()
+
+        Log.d("WeatherDataViewModel", "updateWeatherData(): weatherData: ${_weatherData.value}")
     }
 }

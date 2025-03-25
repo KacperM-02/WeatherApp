@@ -14,6 +14,7 @@ class WeatherPreferences(context: Context) {
             .putString("weather_data", gson.toJson(response))
             .putLong("weather_timestamp", System.currentTimeMillis())
             .apply()
+        saveCityId(response.id)
     }
 
     fun saveForecastResponse(response: ForecastResponse) {
@@ -46,6 +47,12 @@ class WeatherPreferences(context: Context) {
     }
 
     fun getCityId(): Int {
-        return preferences.getInt("id", 756135)
+        return preferences.getInt("chosen_city_id", 756135)
+    }
+
+    private fun saveCityId(cityId: Int) {
+        preferences.edit()
+            .putInt("chosen_city_id", cityId)
+            .apply()
     }
 }

@@ -8,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.example.weatherapp.R
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.example.weatherapp.databinding.FragmentWeatherDataBinding
 import com.example.weatherapp.ui.settings.SettingsViewModel
 
@@ -41,18 +41,19 @@ class WeatherDataFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        weatherDataViewModel.weatherData.observe(viewLifecycleOwner) { weatherData ->
+        val weatherDataObserver = Observer<String> { weatherData ->
             binding.textHome.text = weatherData
             currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ")?.split(",")?.firstOrNull()?.trim() ?: ""
-            updateFavoriteIcon()
+//            updateFavoriteIcon()
+            Log.d("WeatherDataFragment", "setupObservers(): weatherData: $weatherData")
         }
 
-        weatherDataViewModel.weatherIcon.observe(viewLifecycleOwner) { iconBytes ->
+        val weatherIconObserver = Observer<ByteArray> { iconBytes ->
             val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
             binding.weatherIcon.setImageBitmap(bitmap)
         }
 
-        weatherDataViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        val isLoadingObserver = Observer<Boolean> { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
@@ -62,11 +63,10 @@ class WeatherDataFragment : Fragment() {
             }
         }
 
-        Log.d("WeatherDataFragment", "setupObservers(): called")
-        settingsViewModel.chosenCityId.observe(viewLifecycleOwner) { cityId ->
-            weatherDataViewModel.fetchWeatherData(cityId)
-            Log.d("WeatherDataFragment", "setupObservers(): cityID: $cityId")
-        }
+        weatherDataViewModel.weatherData.observe(requireActivity(), weatherDataObserver)
+        weatherDataViewModel.weatherIcon.observe(requireActivity(), weatherIconObserver)
+        weatherDataViewModel.isLoading.observe(requireActivity(), isLoadingObserver)
+        weatherDataViewModel.error.observe(requireActivity(), errorObserver)
     }
 
     private fun setupFavoriteButton() {

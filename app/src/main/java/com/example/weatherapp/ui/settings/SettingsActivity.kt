@@ -1,6 +1,8 @@
 package com.example.weatherapp.ui.settings
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.JsonReader
 import android.util.Log
@@ -9,7 +11,6 @@ import android.view.View
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
@@ -23,7 +24,6 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     private lateinit var searchRV : RecyclerView
 
     private lateinit var binding: ActivitySettingsBinding
-    private lateinit var settingsViewModel: SettingsViewModel
 
     private lateinit var favoriteCitiesAdapter: FavoriteCitiesAdapter
     private lateinit var citySearchAdapter: CitySearchAdapter
@@ -38,11 +38,6 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.title_settings)
-
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        settingsViewModel.favoriteCities.observe(this) { cities ->
-            favoriteCitiesAdapter.updateCities(cities)
-        }
 
         weatherSettingsPreferences = WeatherSettingsPreferences(this)
 
@@ -159,9 +154,11 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
             else -> super.onOptionsItemSelected(item)
         }
     }
-    
+
     override fun onCityClick(cityId: Int) {
-        settingsViewModel.setChosenCityId(cityId)
         Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
+        val intent = Intent()
+        intent.putExtra("chosenCityId", cityId)
+        setResult(Activity.RESULT_OK, intent)
     }
 } 
