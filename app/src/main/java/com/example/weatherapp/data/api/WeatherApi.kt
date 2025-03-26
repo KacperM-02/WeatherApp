@@ -24,6 +24,7 @@ interface WeatherApi {
     suspend fun getForecast(
         @Query("id") cityId: Int,
         @Query("appid") apiKey: String,
-        @Query("units") units: String = "metric"
+        @Query("units") units: String = "metric",
+        @Query("cnt") cnt: Int = 10
     ): ForecastResponse
 } 

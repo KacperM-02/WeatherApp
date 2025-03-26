@@ -25,8 +25,8 @@ data class Coord(
 data class Main(
     val temp: Double,
     val feelsLike: Double,
-    val humidity: Int,
-    val pressure: Int
+    val pressure: Int,
+    val humidity: Int
 )
 
 data class Weather(

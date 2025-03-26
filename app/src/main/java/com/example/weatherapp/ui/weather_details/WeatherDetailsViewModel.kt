@@ -1,19 +1,11 @@
 package com.example.weatherapp.ui.weather_details
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import com.example.weatherapp.BuildConfig
-import com.example.weatherapp.data.api.WeatherApi
+import androidx.lifecycle.ViewModel
 import com.example.weatherapp.data.model.WeatherResponse
-import com.example.weatherapp.data.preferences.WeatherPreferences
-import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
-class WeatherDetailsViewModel(application: Application) : AndroidViewModel(application) {
+class WeatherDetailsViewModel : ViewModel() {
     private val _weatherData = MutableLiveData<String>()
     val weatherData: LiveData<String> = _weatherData
 
@@ -23,41 +15,21 @@ class WeatherDetailsViewModel(application: Application) : AndroidViewModel(appli
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    private val weatherPreferences = WeatherPreferences(application)
-
-    private val weatherApi = Retrofit.Builder()
-        .baseUrl("https://api.openweathermap.org/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(WeatherApi::class.java)
-
-    fun fetchWeatherData(cityId: Int = 756135) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                
-                weatherPreferences.getWeatherResponse()?.let { response ->
-                    updateWeatherData(response)
-                    if (System.currentTimeMillis() - weatherPreferences.getWeatherTimestamp() > 15 * 60 * 1000) {
-                        fetchFreshData(cityId)
-                    }
-                } ?: fetchFreshData(cityId)
-                
-            } catch (e: Exception) {
-                _error.value = "Błąd: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
+    private fun getWindDirection(degrees: Int): String {
+        return when (degrees) {
+            in 337..360, in 0..22 -> "N"
+            in 23..67 -> "NE"
+            in 68..112 -> "E"
+            in 113..157 -> "SE"
+            in 158..202 -> "S"
+            in 203..247 -> "SW"
+            in 248..292 -> "W"
+            in 293..336 -> "NW"
+            else -> "N"
         }
     }
 
-    private suspend fun fetchFreshData(cityId: Int) {
-        val response = weatherApi.getWeather(cityId, BuildConfig.API_KEY)
-        weatherPreferences.saveWeatherResponse(response)
-        updateWeatherData(response)
-    }
-
-    private fun updateWeatherData(response: WeatherResponse) {
+    fun updateWeatherData(response: WeatherResponse) {
         val windSpeed = response.wind.speed
         val windDeg = response.wind.deg
         val windDirection = getWindDirection(windDeg)
@@ -73,17 +45,13 @@ class WeatherDetailsViewModel(application: Application) : AndroidViewModel(appli
         """.trimIndent()
     }
 
-    private fun getWindDirection(degrees: Int): String {
-        return when (degrees) {
-            in 337..360, in 0..22 -> "N"
-            in 23..67 -> "NE"
-            in 68..112 -> "E"
-            in 113..157 -> "SE"
-            in 158..202 -> "S"
-            in 203..247 -> "SW"
-            in 248..292 -> "W"
-            in 293..336 -> "NW"
-            else -> "N"
-        }
+    fun updateIsLoadingValue(isLoading: Boolean)
+    {
+        _isLoading.value = isLoading
+    }
+
+    fun updateErrorValue(error: String)
+    {
+        _error.value = error
     }
 }

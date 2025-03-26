@@ -23,10 +23,9 @@ class WeatherDataFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
-        val root: View = binding.root
         setupObservers()
 //        setupFavoriteButton()
-        return root
+        return binding.root
     }
 
     private fun setupObservers() {

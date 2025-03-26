@@ -24,18 +24,26 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.example.weatherapp.ui.weather_details.WeatherDetailsViewModel
+import com.example.weatherapp.ui.weather_forecast.WeatherForecastViewModel
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherPreferences: WeatherPreferences
+
     private val weatherDataViewModel : WeatherDataViewModel by viewModels()
+    private val weatherDetailsViewModel : WeatherDetailsViewModel by viewModels()
+    private val weatherForecastViewModel : WeatherForecastViewModel by viewModels()
+
     private val weatherApi = Retrofit.Builder()
         .baseUrl("https://api.openweathermap.org/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(WeatherApi::class.java)
+
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -81,46 +89,74 @@ class MainActivity : AppCompatActivity() {
         val currentTime = System.currentTimeMillis()
         val isInternetAvailable = isInternetAvailable()
         val weatherResponse = weatherPreferences.getWeatherResponse()
+        val forecastResponse = weatherPreferences.getForecastResponse()
 
         if (isInternetAvailable) {
             if (currentTime - lastFetchTime > 15 * 60 * 1000) {
-                fetchWeatherData(weatherPreferences.getCityId())
+                val cityId = weatherPreferences.getCityId()
+                fetchWeatherData(cityId)
                 return
             }
 
-            weatherResponse?.let { weatherDataViewModel.updateWeatherData(it) }
+            weatherResponse?.let {
+                weatherDataViewModel.updateWeatherData(it)
+                weatherDetailsViewModel.updateWeatherData(it)
+            }
+
+            forecastResponse?.let {
+                weatherForecastViewModel.updateForecastData(it)
+            }
             return
         }
 
-        weatherDataViewModel.updateErrorValue("No internet connection.")
+        Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
+//        weatherDataViewModel.updateErrorValue("No internet connection.")
+//        weatherDetailsViewModel.updateErrorValue("No internet connection.")
+//        weatherForecastViewModel.updateErrorValue("No internet connection.")
 
         if (weatherResponse == null)
         {
-            weatherDataViewModel.updateErrorValue("No data available.")
+            Toast.makeText(this, "No data available.", Toast.LENGTH_LONG).show()
+//            weatherDataViewModel.updateErrorValue("No data available.")
+//            weatherDetailsViewModel.updateErrorValue("No data available.")
+//            weatherForecastViewModel.updateErrorValue("No data available.")
             return
         }
-        if (currentTime - lastFetchTime > 15 * 60 * 1000) weatherDataViewModel.updateErrorValue("Data is outdated.")
+        if (currentTime - lastFetchTime > 15 * 60 * 1000) {
+            Toast.makeText(this, "Data is outdated.", Toast.LENGTH_LONG).show()
+//            weatherDataViewModel.updateErrorValue("Data is outdated.")
+//            weatherDetailsViewModel.updateErrorValue("Data is outdated.")
+//            weatherForecastViewModel.updateErrorValue("Data is outdated.")
+        }
     }
 
-    private fun fetchWeatherData(cityId : Int)
-    {
-        Log.d("WeatherDataViewModel", "fetchWeatherData(): cityId: $cityId")
+    private fun fetchWeatherData(chosenCityId : Int) {
+        Log.d("WeatherDataViewModel", "fetchWeatherData(): cityId: $chosenCityId")
         lifecycleScope.launch {
             try {
                 weatherDataViewModel.updateIsLoadingValue(true)
+                weatherDetailsViewModel.updateIsLoadingValue(true)
+                weatherForecastViewModel.updateIsLoadingValue(true)
 
-                val weatherResponse = weatherApi.getWeather(cityId, BuildConfig.API_KEY)
+                val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
+                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
+
                 weatherPreferences.saveWeatherResponse(weatherResponse)
+                weatherPreferences.saveForecastResponse(forecastResponse)
 
                 weatherDataViewModel.updateWeatherData(weatherResponse)
-
-                val forecastResponse = weatherApi.getForecast(cityId, BuildConfig.API_KEY)
-                weatherPreferences.saveForecastResponse(forecastResponse)
+                weatherDetailsViewModel.updateWeatherData(weatherResponse)
+                weatherForecastViewModel.updateForecastData(forecastResponse)
             } catch (e: Exception) {
-                weatherDataViewModel.updateErrorValue("Error fetching data: ${e.message}")
+                Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
+//                weatherDataViewModel.updateErrorValue("Error fetching weather data: ${e.message}")
+//                weatherDetailsViewModel.updateErrorValue("Error fetching weather details: ${e.message}")
+//                weatherForecastViewModel.updateErrorValue("Error fetching forecast: ${e.message}")
             }
             finally {
                 weatherDataViewModel.updateIsLoadingValue(false)
+                weatherDetailsViewModel.updateIsLoadingValue(false)
+                weatherForecastViewModel.updateIsLoadingValue(false)
             }
         }
     }
