@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.data.model.WeatherResponse
 import com.google.gson.Gson
+import android.util.Base64
 
 class WeatherPreferences(context: Context) {
     private val preferences = context.getSharedPreferences("weather_data", Context.MODE_PRIVATE)
@@ -20,7 +21,6 @@ class WeatherPreferences(context: Context) {
     fun saveForecastResponse(response: ForecastResponse) {
         preferences.edit()
             .putString("forecast_data", gson.toJson(response))
-            .putLong("forecast_timestamp", System.currentTimeMillis())
             .apply()
     }
 
@@ -42,12 +42,20 @@ class WeatherPreferences(context: Context) {
         return preferences.getLong("weather_timestamp", 0)
     }
 
-    fun getForecastTimestamp(): Long {
-        return preferences.getLong("forecast_timestamp", 0)
-    }
-
     fun getCityId(): Int {
         return preferences.getInt("chosen_city_id", 756135)
+    }
+
+    fun saveWeatherIcon(icon: ByteArray) {
+        val iconBase64 = Base64.encodeToString(icon, Base64.DEFAULT)
+        preferences.edit()
+            .putString("weather_icon", iconBase64)
+            .apply()
+    }
+
+    fun getWeatherIcon(): ByteArray? {
+        val iconBase64 = preferences.getString("weather_icon", null) ?: return null
+        return Base64.decode(iconBase64, Base64.DEFAULT)
     }
 
     private fun saveCityId(cityId: Int) {

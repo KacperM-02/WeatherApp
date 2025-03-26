@@ -43,6 +43,11 @@ class MainActivity : AppCompatActivity() {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(WeatherApi::class.java)
+    private val imageApi = Retrofit.Builder()
+        .baseUrl("https://openweathermap.org/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(WeatherApi::class.java)
 
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -88,7 +93,10 @@ class MainActivity : AppCompatActivity() {
         val lastFetchTime = weatherPreferences.getWeatherTimestamp()
         val currentTime = System.currentTimeMillis()
         val isInternetAvailable = isInternetAvailable()
+
         val weatherResponse = weatherPreferences.getWeatherResponse()
+        val weatherIcon = weatherPreferences.getWeatherIcon()
+
         val forecastResponse = weatherPreferences.getForecastResponse()
 
         if (isInternetAvailable) {
@@ -103,6 +111,10 @@ class MainActivity : AppCompatActivity() {
                 weatherDetailsViewModel.updateWeatherData(it)
             }
 
+            weatherIcon?.let {
+                weatherDataViewModel.updateWeatherIcon(weatherIcon)
+            }
+
             forecastResponse?.let {
                 weatherForecastViewModel.updateForecastData(it)
             }
@@ -110,24 +122,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
-        weatherDataViewModel.updateErrorValue("No internet connection")
-//        weatherDataViewModel.updateErrorValue("No internet connection.")
-//        weatherDetailsViewModel.updateErrorValue("No internet connection.")
-//        weatherForecastViewModel.updateErrorValue("No internet connection.")
 
-        if (weatherResponse == null)
-        {
+        if (weatherResponse == null || forecastResponse == null || weatherIcon == null) {
+            weatherDataViewModel.updateErrorValue("No data available.")
             Toast.makeText(this, "No data available.", Toast.LENGTH_LONG).show()
-//            weatherDataViewModel.updateErrorValue("No data available.")
-//            weatherDetailsViewModel.updateErrorValue("No data available.")
-//            weatherForecastViewModel.updateErrorValue("No data available.")
         }
-        else if (currentTime - lastFetchTime > 15 * 60 * 1000) {
-            Toast.makeText(this, "Data is outdated.", Toast.LENGTH_LONG).show()
-//            weatherDataViewModel.updateErrorValue("Data is outdated.")
-//            weatherDetailsViewModel.updateErrorValue("Data is outdated.")
-//            weatherForecastViewModel.updateErrorValue("Data is outdated.")
+        else {
+            weatherDataViewModel.updateWeatherData(weatherResponse)
+            weatherDataViewModel.updateWeatherIcon(weatherIcon)
+
+            weatherDetailsViewModel.updateWeatherData(weatherResponse)
+
+            weatherForecastViewModel.updateForecastData(forecastResponse)
         }
+
+        if (currentTime - lastFetchTime > 15 * 60 * 1000) Toast.makeText(this, "Data is outdated.", Toast.LENGTH_LONG).show()
     }
 
     private fun fetchWeatherData(chosenCityId : Int) {
@@ -139,12 +148,16 @@ class MainActivity : AppCompatActivity() {
                 weatherForecastViewModel.updateIsLoadingValue(true)
 
                 val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
-                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
-
+                val weatherIcon = imageApi.getWeatherIcon(weatherResponse.weather.firstOrNull()?.icon ?: "").bytes()
                 weatherPreferences.saveWeatherResponse(weatherResponse)
+                weatherPreferences.saveWeatherIcon(weatherIcon)
+
+                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
                 weatherPreferences.saveForecastResponse(forecastResponse)
 
                 weatherDataViewModel.updateWeatherData(weatherResponse)
+                weatherDataViewModel.updateWeatherIcon(weatherIcon)
+
                 weatherDetailsViewModel.updateWeatherData(weatherResponse)
                 weatherForecastViewModel.updateForecastData(forecastResponse)
             } catch (e: Exception) {
