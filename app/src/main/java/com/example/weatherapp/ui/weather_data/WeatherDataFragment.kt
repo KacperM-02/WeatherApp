@@ -16,7 +16,6 @@ class WeatherDataFragment : Fragment() {
     private var _binding: FragmentWeatherDataBinding? = null
     private val binding get() = _binding!!
     private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
-    private var currentCity: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,16 +23,14 @@ class WeatherDataFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
-        val root: View = binding.root
         setupObservers()
 //        setupFavoriteButton()
-        return root
+        return binding.root
     }
 
     private fun setupObservers() {
         val weatherDataObserver = Observer<String> { weatherData ->
             binding.textHome.text = weatherData
-            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ")?.split(",")?.firstOrNull()?.trim() ?: ""
 //            updateFavoriteIcon()
             Log.d("WeatherDataFragment", "setupObservers(): weatherData: $weatherData")
         }
@@ -45,12 +42,11 @@ class WeatherDataFragment : Fragment() {
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.favoriteIcon.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         val errorObserver = Observer<String> { error ->
-            error.let {
-                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            }
+            if(error.isNotEmpty()) binding.favoriteIcon.visibility = View.GONE
         }
 
         weatherDataViewModel.weatherData.observe(viewLifecycleOwner, weatherDataObserver)

@@ -4,6 +4,8 @@ import android.content.Context
 import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.data.model.WeatherResponse
 import com.google.gson.Gson
+import android.util.Base64
+import com.google.gson.reflect.TypeToken
 
 class WeatherPreferences(context: Context) {
     private val preferences = context.getSharedPreferences("weather_data", Context.MODE_PRIVATE)
@@ -17,18 +19,45 @@ class WeatherPreferences(context: Context) {
         saveCityId(response.id)
     }
 
-    fun saveForecastResponse(response: ForecastResponse) {
-        preferences.edit()
-            .putString("forecast_data", gson.toJson(response))
-            .putLong("forecast_timestamp", System.currentTimeMillis())
-            .apply()
-    }
-
     fun getWeatherResponse(): WeatherResponse? {
         val json = preferences.getString("weather_data", null)
         return if (json != null) {
             gson.fromJson(json, WeatherResponse::class.java)
         } else null
+    }
+
+    fun getWeatherTimestamp(): Long {
+        return preferences.getLong("weather_timestamp", 0)
+    }
+
+    fun saveWeatherIcon(icon: ByteArray) {
+        val iconBase64 = Base64.encodeToString(icon, Base64.DEFAULT)
+        preferences.edit()
+            .putString("weather_icon", iconBase64)
+            .apply()
+    }
+
+    fun getWeatherIcon(): ByteArray? {
+        val iconBase64 = preferences.getString("weather_icon", null) ?: return null
+        return Base64.decode(iconBase64, Base64.DEFAULT)
+    }
+
+
+    private fun saveCityId(cityId: Int) {
+        preferences.edit()
+            .putInt("chosen_city_id", cityId)
+            .apply()
+    }
+
+    fun getCityId(): Int {
+        return preferences.getInt("city_id", 756135)
+    }
+
+
+    fun saveForecastResponse(response: ForecastResponse) {
+        preferences.edit()
+            .putString("forecast_data", gson.toJson(response))
+            .apply()
     }
 
     fun getForecastResponse(): ForecastResponse? {
@@ -38,21 +67,22 @@ class WeatherPreferences(context: Context) {
         } else null
     }
 
-    fun getWeatherTimestamp(): Long {
-        return preferences.getLong("weather_timestamp", 0)
-    }
-
-    fun getForecastTimestamp(): Long {
-        return preferences.getLong("forecast_timestamp", 0)
-    }
-
-    fun getCityId(): Int {
-        return preferences.getInt("chosen_city_id", 756135)
-    }
-
-    private fun saveCityId(cityId: Int) {
+    fun saveForecastIcons(icons: List<ByteArray>) {
+        val iconBase64List = icons.map { icon ->
+            Base64.encodeToString(icon, Base64.DEFAULT)
+        }
+        val jsonIcons = Gson().toJson(iconBase64List)
         preferences.edit()
-            .putInt("chosen_city_id", cityId)
+            .putString("forecast_icons", jsonIcons)
             .apply()
+    }
+
+    fun loadForecastIcons(): List<ByteArray>? {
+        val jsonIcons = preferences.getString("forecast_icons", null) ?: return null
+        val iconBase64List: List<String> = Gson().fromJson(jsonIcons, object : TypeToken<List<String>>() {}.type)
+
+        return iconBase64List.map { base64 ->
+            Base64.decode(base64, Base64.DEFAULT)
+        }
     }
 }
