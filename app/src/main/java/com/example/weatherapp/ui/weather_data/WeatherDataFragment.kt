@@ -16,7 +16,6 @@ class WeatherDataFragment : Fragment() {
     private var _binding: FragmentWeatherDataBinding? = null
     private val binding get() = _binding!!
     private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
-    private var currentCity: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,7 +32,6 @@ class WeatherDataFragment : Fragment() {
     private fun setupObservers() {
         val weatherDataObserver = Observer<String> { weatherData ->
             binding.textHome.text = weatherData
-            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ")?.split(",")?.firstOrNull()?.trim() ?: ""
 //            updateFavoriteIcon()
             Log.d("WeatherDataFragment", "setupObservers(): weatherData: $weatherData")
         }
