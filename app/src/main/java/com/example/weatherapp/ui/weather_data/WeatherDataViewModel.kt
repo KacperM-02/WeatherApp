@@ -26,10 +26,10 @@ class WeatherDataViewModel : ViewModel() {
         _weatherData.value = """
             City: ${response.name}, ${response.sys.country}
             Coordinates: ${response.coord.lat}°N, ${response.coord.lon}°E
-            Time: $time
+            Time of data calculation: $time
             
-            Temperature: ${response.main.temp}°C
-            Feels like: ${response.main.feelsLike}°C
+            Temperature: ${"%.1f".format(response.main.temp)}°C
+            Feels like: ${"%.1f".format(response.main.feels_like)}°C
             Pressure: ${response.main.pressure} hPa
             
             Description: ${response.weather.firstOrNull()?.description ?: ""}

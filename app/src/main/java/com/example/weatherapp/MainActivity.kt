@@ -26,6 +26,8 @@ import android.net.NetworkCapabilities
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.example.weatherapp.data.model.ForecastResponse
+import com.example.weatherapp.data.model.WeatherResponse
 import com.example.weatherapp.ui.weather_details.WeatherDetailsViewModel
 import com.example.weatherapp.ui.weather_forecast.WeatherForecastViewModel
 import kotlinx.coroutines.launch
@@ -48,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(WeatherApi::class.java)
-
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -80,113 +81,6 @@ class MainActivity : AppCompatActivity() {
         fetchInitialData()
     }
 
-    private fun isInternetAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-    }
-
-    private fun fetchInitialData() {
-        val lastFetchTime = weatherPreferences.getWeatherTimestamp()
-        val currentTime = System.currentTimeMillis()
-        val isInternetAvailable = isInternetAvailable()
-
-        val weatherResponse = weatherPreferences.getWeatherResponse()
-        val weatherIcon = weatherPreferences.getWeatherIcon()
-
-        val forecastResponse = weatherPreferences.getForecastResponse()
-
-        if (isInternetAvailable) {
-            if (currentTime - lastFetchTime > 15 * 60 * 1000) {
-                val cityId = weatherPreferences.getCityId()
-                fetchWeatherData(cityId)
-                return
-            }
-
-            weatherResponse?.let {
-                weatherDataViewModel.updateWeatherData(it)
-                weatherDetailsViewModel.updateWeatherData(it)
-            }
-
-            weatherIcon?.let {
-                weatherDataViewModel.updateWeatherIcon(weatherIcon)
-            }
-
-            forecastResponse?.let {
-                weatherForecastViewModel.updateForecastData(it)
-            }
-            return
-        }
-
-        Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
-
-        if (weatherResponse == null || forecastResponse == null || weatherIcon == null) {
-            weatherDataViewModel.updateErrorValue("No data available.")
-            Toast.makeText(this, "No data available.", Toast.LENGTH_LONG).show()
-        }
-        else {
-            weatherDataViewModel.updateWeatherData(weatherResponse)
-            weatherDataViewModel.updateWeatherIcon(weatherIcon)
-
-            weatherDetailsViewModel.updateWeatherData(weatherResponse)
-
-            weatherForecastViewModel.updateForecastData(forecastResponse)
-        }
-
-        if (currentTime - lastFetchTime > 15 * 60 * 1000) Toast.makeText(this, "Data is outdated.", Toast.LENGTH_LONG).show()
-    }
-
-    private fun fetchWeatherData(chosenCityId : Int) {
-        Log.d("WeatherDataViewModel", "fetchWeatherData(): cityId: $chosenCityId")
-        lifecycleScope.launch {
-            try {
-                weatherDataViewModel.updateIsLoadingValue(true)
-                weatherDetailsViewModel.updateIsLoadingValue(true)
-                weatherForecastViewModel.updateIsLoadingValue(true)
-
-                // Weather
-                val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
-                val weatherIcon = imageApi.getWeatherIcon(weatherResponse.weather.firstOrNull()?.icon ?: "").bytes()
-                weatherPreferences.saveWeatherResponse(weatherResponse)
-                weatherPreferences.saveWeatherIcon(weatherIcon)
-
-                weatherDataViewModel.updateWeatherData(weatherResponse)
-                weatherDataViewModel.updateWeatherIcon(weatherIcon)
-                weatherDetailsViewModel.updateWeatherData(weatherResponse)
-
-                // Forecast
-                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
-                forecastResponse.list = forecastResponse.list.filter { forecast ->
-                    forecast.dt_txt.split(" ")[1] == "15:00:00"
-                }.groupBy { forecast ->
-                    // Grupowanie według daty (ignorujemy godzinę)
-                    forecast.dt_txt.split(" ")[0]
-                }.map { (_, forecasts) ->
-                    // Zwracamy tylko pierwszy wpis dla każdej grupy (dnia)
-                    forecasts.first()
-                }
-                val forecastIcons = forecastResponse.list.map { forecast ->
-                    imageApi.getWeatherIcon(forecast.weather.firstOrNull()?.icon ?: "").bytes()
-                }
-
-                weatherPreferences.saveForecastResponse(forecastResponse)
-
-                weatherForecastViewModel.updateForecastData(forecastResponse)
-                weatherForecastViewModel.updateForecastIcons(forecastIcons)
-            } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-            finally {
-                weatherDataViewModel.updateIsLoadingValue(false)
-                weatherDetailsViewModel.updateIsLoadingValue(false)
-                weatherForecastViewModel.updateIsLoadingValue(false)
-            }
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.top_app_bar, menu)
         return true
@@ -205,5 +99,124 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return findNavController(R.id.nav_host_fragment_activity_main).navigateUp()
                 || super.onSupportNavigateUp()
+    }
+
+
+    private fun fetchInitialData() {
+        val lastFetchTime = weatherPreferences.getWeatherTimestamp()
+        val currentTime = System.currentTimeMillis()
+        val isInternetAvailable = isInternetAvailable()
+
+        val weatherResponse = weatherPreferences.getWeatherResponse()
+        val weatherIcon = weatherPreferences.getWeatherIcon()
+
+        val forecastResponse = weatherPreferences.getForecastResponse()
+        val forecastIcons = weatherPreferences.loadForecastIcons()
+
+        if (isInternetAvailable) {
+            if (currentTime - lastFetchTime > 15 * 60 * 1000) {
+                val cityId = weatherPreferences.getCityId()
+                fetchWeatherData(cityId)
+                return
+            }
+
+            updateWeatherData(weatherResponse, weatherIcon, forecastResponse, forecastIcons)
+            return
+        }
+
+        Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
+
+        if (weatherResponse == null || forecastResponse == null || weatherIcon == null || forecastIcons == null) {
+            weatherDataViewModel.updateErrorValue("No data available.")
+            Toast.makeText(this, "No data available.", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (currentTime - lastFetchTime > 15 * 60 * 1000) Toast.makeText(this, "Data is outdated.", Toast.LENGTH_SHORT).show()
+
+        updateWeatherData(weatherResponse, weatherIcon, forecastResponse, forecastIcons)
+    }
+
+    private fun fetchWeatherData(chosenCityId : Int) {
+        Log.d("WeatherDataViewModel", "fetchWeatherData(): cityId: $chosenCityId")
+        lifecycleScope.launch {
+            try {
+                updateWeatherLoading(true)
+
+                // Weather
+                val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
+                val weatherIcon = imageApi.getWeatherIcon(weatherResponse.weather.firstOrNull()?.icon ?: "").bytes()
+
+                // Forecast
+                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
+
+                val filteredList = forecastResponse.list
+                    .filter { it.dt_txt.split(" ")[1] == "15:00:00" }
+                    .groupBy { it.dt_txt.split(" ")[0] }
+                    .map { (_, forecasts) -> forecasts.first() }
+
+                val filteredForecastResponse = forecastResponse.copy(list = filteredList)
+                val forecastIcons = filteredForecastResponse.list.map { forecast ->
+                    imageApi.getWeatherIcon(forecast.weather.firstOrNull()?.icon ?: "").bytes()
+                }
+
+                updateWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
+                saveWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+            finally {
+                updateWeatherLoading(false)
+            }
+        }
+    }
+
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+        return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    private fun updateWeatherData(
+        weatherResponse: WeatherResponse?,
+        weatherIcon: ByteArray?,
+        forecastResponse: ForecastResponse?,
+        forecastIcons: List<ByteArray>?
+    ) {
+        weatherResponse?.let {
+            weatherDataViewModel.updateWeatherData(it)
+            weatherDetailsViewModel.updateWeatherData(it)
+        }
+        weatherIcon?.let {
+            weatherDataViewModel.updateWeatherIcon(weatherIcon)
+        }
+
+        forecastResponse?.let {
+            weatherForecastViewModel.updateForecastData(it)
+        }
+        forecastIcons?.let {
+            weatherForecastViewModel.updateForecastIcons(it)
+        }
+    }
+
+    private fun updateWeatherLoading(state: Boolean) {
+        weatherDataViewModel.updateIsLoadingValue(state)
+        weatherDetailsViewModel.updateIsLoadingValue(state)
+        weatherForecastViewModel.updateIsLoadingValue(state)
+    }
+
+    private fun saveWeatherData(
+        weatherResponse: WeatherResponse,
+        weatherIcon: ByteArray,
+        filteredForecastResponse: ForecastResponse,
+        forecastIcons: List<ByteArray>
+    ) {
+        weatherPreferences.saveWeatherResponse(weatherResponse)
+        weatherPreferences.saveWeatherIcon(weatherIcon)
+        weatherPreferences.saveForecastResponse(filteredForecastResponse)
+        weatherPreferences.saveForecastIcons(forecastIcons)
     }
 }

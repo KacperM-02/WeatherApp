@@ -10,8 +10,8 @@ class WeatherForecastViewModel: ViewModel() {
     private val _forecast = MutableLiveData<ForecastResponse>()
     val forecast: LiveData<ForecastResponse> = _forecast
 
-    private val forecastIcons = MutableLiveData<List<ByteArray>>()
-    val weatherIcon: LiveData<List<ByteArray>> = forecastIcons
+    private val _forecastIcons = MutableLiveData<List<ByteArray>>()
+    val forecastIcons: LiveData<List<ByteArray>> = _forecastIcons
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -25,7 +25,7 @@ class WeatherForecastViewModel: ViewModel() {
     }
 
     fun updateForecastIcons(forecastIcons: List<ByteArray>) {
-        this.forecastIcons.value = forecastIcons
+        this._forecastIcons.value = forecastIcons
     }
 
     fun updateIsLoadingValue(isLoading: Boolean)

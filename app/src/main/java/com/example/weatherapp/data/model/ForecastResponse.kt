@@ -1,7 +1,7 @@
 package com.example.weatherapp.data.model
 
 data class ForecastResponse(
-    var list: List<ForecastItem>,
+    val list: List<ForecastItem>,
 )
 
 data class ForecastItem(

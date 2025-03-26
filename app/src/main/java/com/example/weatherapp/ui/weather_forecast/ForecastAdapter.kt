@@ -54,10 +54,10 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
             val dateTime = LocalDateTime.parse(item.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val day = dateTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("eng"))
 
-            binding.day.text = day
-            binding.description.text = item.weather.firstOrNull()?.description ?: ""
+            binding.day.text = binding.root.context.getString(R.string.day_format, day)
+            binding.description.text = binding.root.context.getString(R.string.description_format, item.weather.firstOrNull()?.description)
             binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp)
-            binding.feelsLike.text = binding.root.context.getString(R.string.temperature_format, item.main.feelsLike)
+            binding.feelsLike.text = binding.root.context.getString(R.string.feels_like_format, item.main.feels_like)
 
             val bitmap = BitmapFactory.decodeByteArray(icon, 0, icon.size)
             binding.weatherIcon.setImageBitmap(bitmap)

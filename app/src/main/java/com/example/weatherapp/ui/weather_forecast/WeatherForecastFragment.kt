@@ -35,7 +35,6 @@ class WeatherForecastFragment : Fragment() {
 
         val weatherIconsListObserver = Observer<List<ByteArray>> { iconBytesList ->
             adapter.submitIcons(iconBytesList)
-
         }
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
@@ -49,7 +48,7 @@ class WeatherForecastFragment : Fragment() {
         }
 
         weatherForecastViewModel.forecast.observe(viewLifecycleOwner, forecastObserver)
-        weatherForecastViewModel.weatherIcon.observe(viewLifecycleOwner, weatherIconsListObserver)
+        weatherForecastViewModel.forecastIcons.observe(viewLifecycleOwner, weatherIconsListObserver)
         weatherForecastViewModel.isLoading.observe(viewLifecycleOwner, isLoadingObserver)
         weatherForecastViewModel.error.observe(viewLifecycleOwner, errorObserver)
     }
