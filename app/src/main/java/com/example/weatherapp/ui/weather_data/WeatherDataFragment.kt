@@ -1,0 +1,83 @@
+package com.example.weatherapp.ui.weather_data
+
+import android.graphics.BitmapFactory
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import com.example.weatherapp.databinding.FragmentWeatherDataBinding
+
+class WeatherDataFragment : Fragment() {
+    private var _binding: FragmentWeatherDataBinding? = null
+    private val binding get() = _binding!!
+    private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
+        setupObservers()
+//        setupFavoriteButton()
+        return binding.root
+    }
+
+    private fun setupObservers() {
+        val weatherDataObserver = Observer<String> { weatherData ->
+            binding.textHome.text = weatherData
+//            updateFavoriteIcon()
+            Log.d("WeatherDataFragment", "setupObservers(): weatherData: $weatherData")
+        }
+
+        val weatherIconObserver = Observer<ByteArray> { iconBytes ->
+            val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
+            binding.weatherIcon.setImageBitmap(bitmap)
+        }
+
+        val isLoadingObserver = Observer<Boolean> { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.favoriteIcon.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        val errorObserver = Observer<String> { error ->
+            if(error.isNotEmpty()) binding.favoriteIcon.visibility = View.GONE
+        }
+
+        weatherDataViewModel.weatherData.observe(viewLifecycleOwner, weatherDataObserver)
+        weatherDataViewModel.weatherIcon.observe(viewLifecycleOwner, weatherIconObserver)
+        weatherDataViewModel.isLoading.observe(viewLifecycleOwner, isLoadingObserver)
+        weatherDataViewModel.error.observe(viewLifecycleOwner, errorObserver)
+    }
+
+//    private fun setupFavoriteButton() {
+//        binding.favoriteIcon.setOnClickListener {
+//            if (currentCity.isNotBlank()) {
+//                if (!settingsViewModel.isCityFavorite(currentCity)) {
+//                    settingsViewModel.addFavoriteCity(currentCity)
+//                }
+//                else {
+//                    settingsViewModel.removeFavoriteCity(currentCity)
+//                }
+//                updateFavoriteIcon()
+//            }
+//        }
+//    }
+//
+//    private fun updateFavoriteIcon() {
+//        val isFavorite = settingsViewModel.isCityFavorite(currentCity)
+//        binding.favoriteIcon.setImageResource(
+//            if (isFavorite) R.drawable.ic_star_active_24 else R.drawable.ic_star_inactive_24
+//        )
+//    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
