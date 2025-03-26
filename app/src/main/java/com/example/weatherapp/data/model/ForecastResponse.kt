@@ -7,4 +7,5 @@ data class ForecastResponse(
 data class ForecastItem(
     val main: Main,
     val weather: List<Weather>,
+    val dt_txt: String
 )

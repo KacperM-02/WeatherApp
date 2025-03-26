@@ -45,6 +45,7 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ForecastItem) {
+            binding.day.text = item.dt_txt
             binding.description.text = item.weather.firstOrNull()?.description ?: ""
             binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp)
             binding.feelsLike.text = binding.root.context.getString(R.string.temperature_format, item.main.feelsLike)

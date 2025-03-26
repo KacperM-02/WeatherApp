@@ -22,8 +22,17 @@ class WeatherForecastViewModel: ViewModel() {
 
 
     fun updateForecastData(response: ForecastResponse) {
-        _forecast.value = response.list
+        _forecast.value = response.list.filter { forecast ->
+            forecast.dt_txt.split(" ")[1] == "15:00:00"
+        }.groupBy { forecast ->
+            // Grupowanie według daty (ignorujemy godzinę)
+            forecast.dt_txt.split(" ")[0]
+        }.map { (_, forecasts) ->
+            // Zwracamy tylko pierwszy wpis dla każdej grupy (dnia)
+            forecasts.first()
+        }
     }
+
 
     fun updateWeatherIcon(iconBytesList: List<ByteArray>) {
         _weatherIconsList.value = iconBytesList
