@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import com.example.weatherapp.data.model.ForecastItem
+import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.databinding.FragmentWeatherForecastBinding
 
 class WeatherForecastFragment : Fragment() {
@@ -29,12 +29,12 @@ class WeatherForecastFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        val forecastObserver = Observer<List<ForecastItem>> { forecast ->
+        val forecastObserver = Observer<ForecastResponse> { forecast ->
             adapter.submitList(forecast)
         }
 
         val weatherIconsListObserver = Observer<List<ByteArray>> { iconBytesList ->
-            adapter.submitIcon(iconBytesList)
+            adapter.submitIcons(iconBytesList)
 
         }
 

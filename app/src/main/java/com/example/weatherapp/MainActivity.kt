@@ -147,24 +147,37 @@ class MainActivity : AppCompatActivity() {
                 weatherDetailsViewModel.updateIsLoadingValue(true)
                 weatherForecastViewModel.updateIsLoadingValue(true)
 
+                // Weather
                 val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
                 val weatherIcon = imageApi.getWeatherIcon(weatherResponse.weather.firstOrNull()?.icon ?: "").bytes()
                 weatherPreferences.saveWeatherResponse(weatherResponse)
                 weatherPreferences.saveWeatherIcon(weatherIcon)
 
-                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
-                weatherPreferences.saveForecastResponse(forecastResponse)
-
                 weatherDataViewModel.updateWeatherData(weatherResponse)
                 weatherDataViewModel.updateWeatherIcon(weatherIcon)
-
                 weatherDetailsViewModel.updateWeatherData(weatherResponse)
+
+                // Forecast
+                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
+                forecastResponse.list = forecastResponse.list.filter { forecast ->
+                    forecast.dt_txt.split(" ")[1] == "15:00:00"
+                }.groupBy { forecast ->
+                    // Grupowanie według daty (ignorujemy godzinę)
+                    forecast.dt_txt.split(" ")[0]
+                }.map { (_, forecasts) ->
+                    // Zwracamy tylko pierwszy wpis dla każdej grupy (dnia)
+                    forecasts.first()
+                }
+                val forecastIcons = forecastResponse.list.map { forecast ->
+                    imageApi.getWeatherIcon(forecast.weather.firstOrNull()?.icon ?: "").bytes()
+                }
+
+                weatherPreferences.saveForecastResponse(forecastResponse)
+
                 weatherForecastViewModel.updateForecastData(forecastResponse)
+                weatherForecastViewModel.updateForecastIcons(forecastIcons)
             } catch (e: Exception) {
                 Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
-//                weatherDataViewModel.updateErrorValue("Error fetching weather data: ${e.message}")
-//                weatherDetailsViewModel.updateErrorValue("Error fetching weather details: ${e.message}")
-//                weatherForecastViewModel.updateErrorValue("Error fetching forecast: ${e.message}")
             }
             finally {
                 weatherDataViewModel.updateIsLoadingValue(false)

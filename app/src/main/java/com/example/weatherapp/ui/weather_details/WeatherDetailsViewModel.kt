@@ -12,9 +12,6 @@ class WeatherDetailsViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _error = MutableLiveData<String>()
-    val error: LiveData<String> = _error
-
     private fun getWindDirection(degrees: Int): String {
         return when (degrees) {
             in 337..360, in 0..22 -> "N"
@@ -48,10 +45,5 @@ class WeatherDetailsViewModel : ViewModel() {
     fun updateIsLoadingValue(isLoading: Boolean)
     {
         _isLoading.value = isLoading
-    }
-
-    fun updateErrorValue(error: String)
-    {
-        _error.value = error
     }
 }

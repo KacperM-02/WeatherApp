@@ -1,11 +1,13 @@
 package com.example.weatherapp.ui.weather_forecast
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.data.model.ForecastItem
+import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.databinding.ItemForecastBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -17,13 +19,13 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
     private var icons = listOf<ByteArray>()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(newItems: List<ForecastItem>) {
-        items = newItems
+    fun submitList(newItems: ForecastResponse) {
+        items = newItems.list
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitIcon(iconBytesList: List<ByteArray>) {
+    fun submitIcons(iconBytesList: List<ByteArray>) {
         icons = iconBytesList
         notifyDataSetChanged()
     }
@@ -39,7 +41,7 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
     }
 
     override fun onBindViewHolder(holder: ForecastViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], icons[position])
     }
 
     override fun getItemCount() = items.size
@@ -48,7 +50,7 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
         private val binding: ItemForecastBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: ForecastItem) {
+        fun bind(item: ForecastItem, icon: ByteArray) {
             val dateTime = LocalDateTime.parse(item.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val day = dateTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("eng"))
 
@@ -57,12 +59,8 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
             binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp)
             binding.feelsLike.text = binding.root.context.getString(R.string.temperature_format, item.main.feelsLike)
 
-//            item.weather.firstOrNull()?.icon?.let { iconCode ->
-//                icons.let { iconBytes ->
-//                    val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
-//                    binding.weatherIcon.setImageBitmap(bitmap)
-//                }
-//            }
+            val bitmap = BitmapFactory.decodeByteArray(icon, 0, icon.size)
+            binding.weatherIcon.setImageBitmap(bitmap)
         }
     }
 }

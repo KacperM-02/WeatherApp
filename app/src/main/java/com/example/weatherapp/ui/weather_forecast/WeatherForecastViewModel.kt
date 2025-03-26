@@ -3,16 +3,15 @@ package com.example.weatherapp.ui.weather_forecast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.weatherapp.data.model.ForecastItem
 import com.example.weatherapp.data.model.ForecastResponse
 
 
 class WeatherForecastViewModel: ViewModel() {
-    private val _forecast = MutableLiveData<List<ForecastItem>>()
-    val forecast: LiveData<List<ForecastItem>> = _forecast
+    private val _forecast = MutableLiveData<ForecastResponse>()
+    val forecast: LiveData<ForecastResponse> = _forecast
 
-    private val _weatherIconsList = MutableLiveData<List<ByteArray>>()
-    val weatherIcon: LiveData<List<ByteArray>> = _weatherIconsList
+    private val forecastIcons = MutableLiveData<List<ByteArray>>()
+    val weatherIcon: LiveData<List<ByteArray>> = forecastIcons
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -22,29 +21,15 @@ class WeatherForecastViewModel: ViewModel() {
 
 
     fun updateForecastData(response: ForecastResponse) {
-        _forecast.value = response.list.filter { forecast ->
-            forecast.dt_txt.split(" ")[1] == "15:00:00"
-        }.groupBy { forecast ->
-            // Grupowanie według daty (ignorujemy godzinę)
-            forecast.dt_txt.split(" ")[0]
-        }.map { (_, forecasts) ->
-            // Zwracamy tylko pierwszy wpis dla każdej grupy (dnia)
-            forecasts.first()
-        }
+        _forecast.value = response
     }
 
-
-    fun updateWeatherIcon(iconBytesList: List<ByteArray>) {
-        _weatherIconsList.value = iconBytesList
+    fun updateForecastIcons(forecastIcons: List<ByteArray>) {
+        this.forecastIcons.value = forecastIcons
     }
 
     fun updateIsLoadingValue(isLoading: Boolean)
     {
         _isLoading.value = isLoading
-    }
-
-    fun updateErrorValue(error: String)
-    {
-        _error.value = error
     }
 }
