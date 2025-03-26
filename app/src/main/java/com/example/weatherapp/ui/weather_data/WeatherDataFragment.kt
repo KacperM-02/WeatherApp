@@ -18,11 +18,6 @@ class WeatherDataFragment : Fragment() {
     private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
     private var currentCity: String = ""
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setupObservers()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,6 +25,7 @@ class WeatherDataFragment : Fragment() {
     ): View {
         _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        setupObservers()
 //        setupFavoriteButton()
         return root
     }
@@ -57,10 +53,10 @@ class WeatherDataFragment : Fragment() {
             }
         }
 
-        weatherDataViewModel.weatherData.observe(requireActivity(), weatherDataObserver)
-        weatherDataViewModel.weatherIcon.observe(requireActivity(), weatherIconObserver)
-        weatherDataViewModel.isLoading.observe(requireActivity(), isLoadingObserver)
-        weatherDataViewModel.error.observe(requireActivity(), errorObserver)
+        weatherDataViewModel.weatherData.observe(viewLifecycleOwner, weatherDataObserver)
+        weatherDataViewModel.weatherIcon.observe(viewLifecycleOwner, weatherIconObserver)
+        weatherDataViewModel.isLoading.observe(viewLifecycleOwner, isLoadingObserver)
+        weatherDataViewModel.error.observe(viewLifecycleOwner, errorObserver)
     }
 
 //    private fun setupFavoriteButton() {
