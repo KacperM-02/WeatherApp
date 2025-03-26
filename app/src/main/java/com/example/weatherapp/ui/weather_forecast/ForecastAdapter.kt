@@ -7,6 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.data.model.ForecastItem
 import com.example.weatherapp.databinding.ItemForecastBinding
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>() {
     private var items = listOf<ForecastItem>()
@@ -45,7 +49,10 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ForecastItem) {
-            binding.day.text = item.dt_txt
+            val dateTime = LocalDateTime.parse(item.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            val day = dateTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("eng"))
+
+            binding.day.text = day
             binding.description.text = item.weather.firstOrNull()?.description ?: ""
             binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp)
             binding.feelsLike.text = binding.root.context.getString(R.string.temperature_format, item.main.feelsLike)

@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
+        weatherDataViewModel.updateErrorValue("No internet connection")
 //        weatherDataViewModel.updateErrorValue("No internet connection.")
 //        weatherDetailsViewModel.updateErrorValue("No internet connection.")
 //        weatherForecastViewModel.updateErrorValue("No internet connection.")
@@ -120,9 +121,8 @@ class MainActivity : AppCompatActivity() {
 //            weatherDataViewModel.updateErrorValue("No data available.")
 //            weatherDetailsViewModel.updateErrorValue("No data available.")
 //            weatherForecastViewModel.updateErrorValue("No data available.")
-            return
         }
-        if (currentTime - lastFetchTime > 15 * 60 * 1000) {
+        else if (currentTime - lastFetchTime > 15 * 60 * 1000) {
             Toast.makeText(this, "Data is outdated.", Toast.LENGTH_LONG).show()
 //            weatherDataViewModel.updateErrorValue("Data is outdated.")
 //            weatherDetailsViewModel.updateErrorValue("Data is outdated.")

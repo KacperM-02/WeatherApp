@@ -42,12 +42,11 @@ class WeatherDataFragment : Fragment() {
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.favoriteIcon.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         val errorObserver = Observer<String> { error ->
-            error.let {
-                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            }
+            if(error.isNotEmpty()) binding.favoriteIcon.visibility = View.GONE
         }
 
         weatherDataViewModel.weatherData.observe(viewLifecycleOwner, weatherDataObserver)
