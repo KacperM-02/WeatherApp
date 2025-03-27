@@ -14,11 +14,29 @@ class WeatherSettingsPreferences(context: Context) {
         return gson.fromJson(citiesJson, type)
     }
 
-    fun saveFavoriteCities(cities: List<String>) {
-        val citiesJson = gson.toJson(cities)
+    fun addFavoriteCity(city: String) {
+        val citiesList = loadFavoriteCities().toMutableList()
+        citiesList.add(city)
+
+        val citiesJson = gson.toJson(citiesList)
         preferences.edit()
             .putString("favorite_cities", citiesJson)
             .apply()
+    }
+
+    fun removeFavoriteCity(city: String) {
+        val citiesList = loadFavoriteCities().toMutableList()
+        citiesList.remove(city)
+
+        val citiesJson = gson.toJson(citiesList)
+        preferences.edit()
+            .putString("favorite_cities", citiesJson)
+            .apply()
+    }
+
+    fun isCityFavorite(city: String): Boolean {
+        val citiesList = loadFavoriteCities()
+        return citiesList.contains(city)
     }
 
     fun getUnits(): String {
