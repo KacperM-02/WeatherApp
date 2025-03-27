@@ -19,17 +19,24 @@ class WeatherDataViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    fun updateWeatherData(response: WeatherResponse) {
+
+    fun updateWeatherData(response: WeatherResponse, units: String) {
         val time = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
             .format(Date(response.dt * 1000))
+        val tempUnits = when(units) {
+            "standard" -> "K"
+            "metric" -> "°C"
+            "imperial" -> "°F"
+            else -> "°C"
+        }
 
         _weatherData.value = """
             City: ${response.name}, ${response.sys.country}
-            Coordinates: ${response.coord.lat}°N, ${response.coord.lon}°E
+            Coordinates: ${"%.1f".format(response.coord.lat)}°N, ${"%.1f".format(response.coord.lon)}°E
             Time of data calculation: $time
             
-            Temperature: ${"%.1f".format(response.main.temp)}°C
-            Feels like: ${"%.1f".format(response.main.feels_like)}°C
+            Temperature: ${"%.1f%s".format(response.main.temp, tempUnits)}
+            Feels like: ${"%.1f%s".format(response.main.feels_like, tempUnits)}
             Pressure: ${response.main.pressure} hPa
             
             Description: ${response.weather.firstOrNull()?.description ?: ""}

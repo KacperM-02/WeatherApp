@@ -30,15 +30,23 @@ class WeatherForecastFragment : Fragment() {
 
     private fun setupObservers() {
         val forecastObserver = Observer<ForecastResponse> { forecast ->
-            adapter.submitList(forecast)
+            adapter.updateItems(forecast)
         }
 
         val weatherIconsListObserver = Observer<List<ByteArray>> { iconBytesList ->
-            adapter.submitIcons(iconBytesList)
+            adapter.updateIcons(iconBytesList)
         }
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            if(isLoading)
+            {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+            }
+            else {
+                binding.progressBar.visibility = View.GONE
+                binding.recyclerView.visibility = View.VISIBLE
+            }
         }
 
         val errorObserver = Observer<String> { error ->
@@ -47,10 +55,15 @@ class WeatherForecastFragment : Fragment() {
             }
         }
 
+        val tempUnitsObserver = Observer<String> { tempUnits ->
+            adapter.updateTempUnits(tempUnits)
+        }
+
         weatherForecastViewModel.forecast.observe(viewLifecycleOwner, forecastObserver)
         weatherForecastViewModel.forecastIcons.observe(viewLifecycleOwner, weatherIconsListObserver)
         weatherForecastViewModel.isLoading.observe(viewLifecycleOwner, isLoadingObserver)
         weatherForecastViewModel.error.observe(viewLifecycleOwner, errorObserver)
+        weatherForecastViewModel.tempUnits.observe(viewLifecycleOwner, tempUnitsObserver)
     }
 
     override fun onDestroyView() {

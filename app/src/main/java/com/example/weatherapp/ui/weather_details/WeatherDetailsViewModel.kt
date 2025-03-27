@@ -12,6 +12,7 @@ class WeatherDetailsViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+
     private fun getWindDirection(degrees: Int): String {
         return when (degrees) {
             in 337..360, in 0..22 -> "N"
@@ -26,24 +27,25 @@ class WeatherDetailsViewModel : ViewModel() {
         }
     }
 
-    fun updateWeatherData(response: WeatherResponse) {
+    fun updateWeatherData(response: WeatherResponse, units: String) {
         val windSpeed = response.wind.speed
+        val windUnit = if (units == "metric" || units == "standard") "m/s" else "mph"
         val windDeg = response.wind.deg
         val windDirection = getWindDirection(windDeg)
-        val visibility = response.visibility / 1000.0 // konwersja na kilometry
+        val visibility = response.visibility
         val clouds = response.clouds.all
+        val humidity = response.main.humidity
 
         _weatherData.value = """
-            Wind speed: $windSpeed m/s
-            Wind direction: $windDirection ($windDeg°)
-            Visibility: $visibility km
-            Clouds: $clouds%
-            Humidity: ${response.main.humidity}%
-        """.trimIndent()
+            Wind speed: %.1f %s
+            Wind direction: %s (%d°)
+            Visibility: %d m
+            Clouds: %d%%
+            Humidity: %d%%
+        """.trimIndent().format(windSpeed, windUnit, windDirection, windDeg, visibility, clouds, humidity)
     }
 
-    fun updateIsLoadingValue(isLoading: Boolean)
-    {
+    fun updateIsLoadingValue(isLoading: Boolean) {
         _isLoading.value = isLoading
     }
 }

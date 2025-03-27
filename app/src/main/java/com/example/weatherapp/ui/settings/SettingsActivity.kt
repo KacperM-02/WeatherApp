@@ -30,6 +30,8 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
 
     private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
 
+    private val intent = Intent()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +52,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
+                setResult(Activity.RESULT_OK, intent)
                 finish()
                 true
             }
@@ -59,9 +62,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
 
     override fun onCityClick(cityId: Int) {
         Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
-        val intent = Intent()
         intent.putExtra("chosenCityId", cityId)
-        setResult(Activity.RESULT_OK, intent)
     }
 
 
@@ -102,6 +103,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
                 else -> "metric"
             }
             weatherSettingsPreferences.saveUnits(units)
+            intent.putExtra("units", units)
         }
     }
 
