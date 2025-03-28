@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             } else if (units != null && this.units != units) {
                 this.units = units
                 fetchWeatherData(weatherPreferences.getCityId())
-            } else if (chosenCityId != null && chosenCityId != -1) {
+            } else if (chosenCityId != null && chosenCityId != -1 && chosenCityId != weatherPreferences.getCityId()) {
                 fetchWeatherData(chosenCityId)
             }
         }

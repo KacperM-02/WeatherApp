@@ -37,7 +37,7 @@ class WeatherDataFragment : Fragment() {
     private fun setupObservers() {
         val weatherDataObserver = Observer<String> { weatherData ->
             binding.textWeatherData.text = weatherData
-            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ")?.split(",")?.firstOrNull()?.trim() ?: ""
+            currentCity = weatherData.split("\n").firstOrNull()?.removePrefix("City: ") ?: ""
             updateFavoriteIcon()
         }
 
@@ -51,10 +51,12 @@ class WeatherDataFragment : Fragment() {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.textWeatherData.visibility = View.GONE
                 binding.weatherIcon.visibility = View.GONE
+                binding.favoriteIcon.visibility = View.GONE
             } else {
                 binding.progressBar.visibility = View.GONE
                 binding.textWeatherData.visibility = View.VISIBLE
                 binding.weatherIcon.visibility = View.VISIBLE
+                binding.favoriteIcon.visibility = View.VISIBLE
             }
         }
 

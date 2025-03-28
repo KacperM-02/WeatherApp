@@ -28,7 +28,7 @@ class CitySearchAdapter(
     }
 
     override fun onBindViewHolder(holder: CityViewHolder, position: Int) {
-        holder.cityNameTV.text = citiesList[position].name
+        holder.cityNameTV.text = "%s, %s".format(citiesList[position].name, citiesList[position].country)
     }
 
     @SuppressLint("NotifyDataSetChanged")
