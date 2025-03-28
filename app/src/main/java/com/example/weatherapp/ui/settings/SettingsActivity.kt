@@ -19,7 +19,7 @@ import com.example.weatherapp.data.model.CityData
 import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import java.io.InputStreamReader
 
-class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener {
+class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener, FavoriteCitiesAdapter.OnFavoriteCityClickListener {
     private lateinit var searchV : SearchView
     private lateinit var searchRV : RecyclerView
 
@@ -65,6 +65,11 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         intent.putExtra("chosenCityId", cityId)
     }
 
+    override fun onFavoriteCityClick(cityId: Int) {
+        Log.d("SettingsActivity", "onFavoriteCityClick: cityId: $cityId")
+        intent.putExtra("chosenCityId", cityId)
+    }
+
 
     private fun setupBindings() {
         searchV = binding.searchView
@@ -73,7 +78,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
 
     private fun setupRecyclerView() {
         val favoriteCities = weatherSettingsPreferences.loadFavoriteCities()
-        favoriteCitiesAdapter = FavoriteCitiesAdapter(favoriteCities)
+        favoriteCitiesAdapter = FavoriteCitiesAdapter(favoriteCities, this)
         binding.favoriteCitiesList.apply {
             adapter = favoriteCitiesAdapter
             layoutManager = LinearLayoutManager(this@SettingsActivity)

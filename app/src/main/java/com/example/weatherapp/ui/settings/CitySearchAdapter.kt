@@ -12,15 +12,14 @@ import com.example.weatherapp.data.model.CityData
 class CitySearchAdapter(
     private var citiesList: List<CityData>,
     private val onCityClickListener: OnCityClickListener
-    ) : RecyclerView.Adapter<CitySearchAdapter.CityViewHolder>()
-{
+    ) : RecyclerView.Adapter<CitySearchAdapter.CityViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_favorite_city, parent, false)
         return CityViewHolder(view)
     }
 
-        interface OnCityClickListener {
+    interface OnCityClickListener {
         fun onCityClick(cityId: Int)
     }
 

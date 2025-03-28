@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.example.weatherapp.R
+import com.example.weatherapp.data.preferences.WeatherPreferences
 import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import com.example.weatherapp.databinding.FragmentWeatherDataBinding
 
@@ -17,6 +18,7 @@ class WeatherDataFragment : Fragment() {
     private val binding get() = _binding!!
     private val weatherDataViewModel: WeatherDataViewModel by activityViewModels()
     private lateinit var weatherSettingsPreferences : WeatherSettingsPreferences
+    private lateinit var weatherPreferences : WeatherPreferences
     private var currentCity = ""
 
     override fun onCreateView(
@@ -26,6 +28,7 @@ class WeatherDataFragment : Fragment() {
     ): View {
         _binding = FragmentWeatherDataBinding.inflate(inflater, container, false)
         weatherSettingsPreferences = WeatherSettingsPreferences(requireContext())
+        weatherPreferences = WeatherPreferences(requireContext())
         setupObservers()
         setupFavoriteButton()
         return binding.root
@@ -69,7 +72,7 @@ class WeatherDataFragment : Fragment() {
     private fun setupFavoriteButton() {
         binding.favoriteIcon.setOnClickListener {
             if (!weatherSettingsPreferences.isCityFavorite(currentCity)) {
-                weatherSettingsPreferences.addFavoriteCity(currentCity)
+                weatherSettingsPreferences.addFavoriteCity(currentCity, weatherPreferences.getCityId())
             }
             else {
                 weatherSettingsPreferences.removeFavoriteCity(currentCity)

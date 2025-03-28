@@ -176,6 +176,7 @@ class MainActivity : AppCompatActivity() {
                 updateWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
                 saveWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
             } catch (e: Exception) {
+                weatherDataViewModel.updateErrorValue("Error fetching weather data: ${e.message}")
                 Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
             }
             finally {
