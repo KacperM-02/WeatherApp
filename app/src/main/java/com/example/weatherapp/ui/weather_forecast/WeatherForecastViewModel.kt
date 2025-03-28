@@ -19,9 +19,12 @@ class WeatherForecastViewModel: ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+    private var _tempUnits = MutableLiveData<String>()
+    val tempUnits: LiveData<String> = _tempUnits
 
-    fun updateForecastData(response: ForecastResponse) {
+    fun updateForecastData(response: ForecastResponse, units: String) {
         _forecast.value = response
+        _tempUnits.value = units
     }
 
     fun updateForecastIcons(forecastIcons: List<ByteArray>) {

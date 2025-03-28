@@ -1,6 +1,5 @@
 package com.example.weatherapp.ui.settings
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,11 +7,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 
-class FavoriteCitiesAdapter(private var cities: List<String>) : RecyclerView.Adapter<FavoriteCitiesAdapter.ViewHolder>() {
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val cityName: TextView = view.findViewById(R.id.cityName)
-    }
-
+class FavoriteCitiesAdapter(
+    private var cities: Map<String, Int>,
+    private val onFavoriteCityClickListener: OnFavoriteCityClickListener
+    ) : RecyclerView.Adapter<FavoriteCitiesAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_favorite_city, parent, false)
@@ -20,14 +18,29 @@ class FavoriteCitiesAdapter(private var cities: List<String>) : RecyclerView.Ada
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.cityName.text = cities[position]
+        val citiesList = cities.keys.toList()
+        holder.cityName.text = citiesList[position]
     }
 
     override fun getItemCount() = cities.size
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun updateCities(newCities: List<String>) {
-        cities = newCities
-        notifyDataSetChanged()
+
+    interface OnFavoriteCityClickListener {
+        fun onFavoriteCityClick(cityId: Int)
     }
+
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val cityName: TextView = view.findViewById(R.id.cityName)
+
+        init {
+            view.setOnClickListener {
+                val position: Int = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onFavoriteCityClickListener.onFavoriteCityClick(cities.values.toList()[position])
+                }
+            }
+        }
+    }
+
+
 } 

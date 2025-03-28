@@ -8,17 +8,34 @@ class WeatherSettingsPreferences(context: Context) {
     private val preferences = context.getSharedPreferences("weather_settings", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    fun loadFavoriteCities(): List<String> {
-        val citiesJson = preferences.getString("favorite_cities", "[]")
-        val type = object : TypeToken<List<String>>() {}.type
-        return gson.fromJson(citiesJson, type)
+    fun loadFavoriteCities(): Map<String, Int> {
+        val citiesJson = preferences.getString("favorite_cities", "{}")
+        return gson.fromJson(citiesJson, object : TypeToken<Map<String, Int>>() {}.type) ?: emptyMap()
     }
 
-    fun saveFavoriteCities(cities: List<String>) {
-        val citiesJson = gson.toJson(cities)
+    fun addFavoriteCity(city: String, cityId: Int) {
+        val citiesMap = loadFavoriteCities().toMutableMap()
+        citiesMap[city] = cityId
+
+        val citiesJson = gson.toJson(citiesMap)
         preferences.edit()
             .putString("favorite_cities", citiesJson)
             .apply()
+    }
+
+    fun removeFavoriteCity(city: String) {
+        val citiesList = loadFavoriteCities().toMutableMap()
+        citiesList.remove(city)
+
+        val citiesJson = gson.toJson(citiesList)
+        preferences.edit()
+            .putString("favorite_cities", citiesJson)
+            .apply()
+    }
+
+    fun isCityFavorite(city: String): Boolean {
+        val citiesList = loadFavoriteCities()
+        return citiesList.contains(city)
     }
 
     fun getUnits(): String {

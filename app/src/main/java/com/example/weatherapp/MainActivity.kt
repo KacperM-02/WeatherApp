@@ -24,17 +24,24 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import android.widget.ListView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.data.model.WeatherResponse
+import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import com.example.weatherapp.ui.weather_details.WeatherDetailsViewModel
 import com.example.weatherapp.ui.weather_forecast.WeatherForecastViewModel
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherPreferences: WeatherPreferences
+    private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
+    private lateinit var listView: ListView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private var units = String()
 
     private val weatherDataViewModel : WeatherDataViewModel by viewModels()
     private val weatherDetailsViewModel : WeatherDetailsViewModel by viewModels()
@@ -54,7 +61,14 @@ class MainActivity : AppCompatActivity() {
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val chosenCityId = result.data?.getIntExtra("chosenCityId", -1)
-            if (chosenCityId != null && chosenCityId != -1) {
+            val units = result.data?.getStringExtra("units")
+            if ((units != null && this.units != units) && (chosenCityId != null && chosenCityId != -1)) {
+                this.units = units
+                fetchWeatherData(chosenCityId)
+            } else if (units != null && this.units != units) {
+                this.units = units
+                fetchWeatherData(weatherPreferences.getCityId())
+            } else if (chosenCityId != null && chosenCityId != -1 && chosenCityId != weatherPreferences.getCityId()) {
                 fetchWeatherData(chosenCityId)
             }
         }
@@ -63,10 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        weatherPreferences = WeatherPreferences(this)
+        setupFields()
 
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
@@ -101,6 +112,22 @@ class MainActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
+    override fun onRefresh() {
+        swipeRefreshLayout.isRefreshing = false
+        fetchWeatherData(weatherPreferences.getCityId())
+    }
+
+
+    private fun setupFields() {
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        weatherPreferences = WeatherPreferences(this)
+        weatherSettingsPreferences = WeatherSettingsPreferences(this)
+        units = weatherSettingsPreferences.getUnits()
+        listView = binding.listView
+        swipeRefreshLayout = binding.swiperefresh
+        swipeRefreshLayout.setOnRefreshListener(this)
+    }
 
     private fun fetchInitialData() {
         val lastFetchTime = weatherPreferences.getWeatherTimestamp()
@@ -115,8 +142,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isInternetAvailable) {
             if (currentTime - lastFetchTime > 15 * 60 * 1000) {
-                val cityId = weatherPreferences.getCityId()
-                fetchWeatherData(cityId)
+                fetchWeatherData(weatherPreferences.getCityId())
                 return
             }
 
@@ -126,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
         Toast.makeText(this, "No internet connection.", Toast.LENGTH_LONG).show()
 
-        if (weatherResponse == null || forecastResponse == null || weatherIcon == null || forecastIcons == null) {
+        if (weatherResponse == null || forecastResponse == null || weatherIcon == null || forecastIcons == null || units.isEmpty()) {
             weatherDataViewModel.updateErrorValue("No data available.")
             Toast.makeText(this, "No data available.", Toast.LENGTH_LONG).show()
             return
@@ -143,11 +169,11 @@ class MainActivity : AppCompatActivity() {
                 updateWeatherLoading(true)
 
                 // Weather
-                val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY)
+                val weatherResponse = weatherApi.getWeather(chosenCityId, BuildConfig.API_KEY, units)
                 val weatherIcon = imageApi.getWeatherIcon(weatherResponse.weather.firstOrNull()?.icon ?: "").bytes()
 
                 // Forecast
-                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY)
+                val forecastResponse = weatherApi.getForecast(chosenCityId, BuildConfig.API_KEY, units)
 
                 val filteredList = forecastResponse.list
                     .filter { it.dt_txt.split(" ")[1] == "15:00:00" }
@@ -162,6 +188,7 @@ class MainActivity : AppCompatActivity() {
                 updateWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
                 saveWeatherData(weatherResponse, weatherIcon, filteredForecastResponse, forecastIcons)
             } catch (e: Exception) {
+                weatherDataViewModel.updateErrorValue("Error fetching weather data: ${e.message}")
                 Toast.makeText(this@MainActivity, "Error fetching weather data: ${e.message}", Toast.LENGTH_LONG).show()
             }
             finally {
@@ -184,18 +211,18 @@ class MainActivity : AppCompatActivity() {
         weatherResponse: WeatherResponse?,
         weatherIcon: ByteArray?,
         forecastResponse: ForecastResponse?,
-        forecastIcons: List<ByteArray>?
+        forecastIcons: List<ByteArray>?,
     ) {
         weatherResponse?.let {
-            weatherDataViewModel.updateWeatherData(it)
-            weatherDetailsViewModel.updateWeatherData(it)
+            weatherDataViewModel.updateWeatherData(it, units)
+            weatherDetailsViewModel.updateWeatherData(it, units)
         }
         weatherIcon?.let {
             weatherDataViewModel.updateWeatherIcon(weatherIcon)
         }
 
         forecastResponse?.let {
-            weatherForecastViewModel.updateForecastData(it)
+            weatherForecastViewModel.updateForecastData(it, units)
         }
         forecastIcons?.let {
             weatherForecastViewModel.updateForecastIcons(it)

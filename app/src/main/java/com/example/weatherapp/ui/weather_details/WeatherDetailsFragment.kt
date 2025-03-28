@@ -26,12 +26,19 @@ class WeatherDetailsFragment : Fragment() {
 
     private fun setupObservers() {
         val weatherDataObserver = Observer<String> { weatherData ->
-            binding.textDashboard.text = weatherData
+            binding.textWeatherDetails.text = weatherData
         }
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-
+            if(isLoading)
+            {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.textWeatherDetails.visibility = View.GONE
+            }
+            else{
+                binding.progressBar.visibility = View.GONE
+                binding.textWeatherDetails.visibility = View.VISIBLE
+            }
         }
 
         weatherDetailsViewModel.weatherData.observe(viewLifecycleOwner, weatherDataObserver)

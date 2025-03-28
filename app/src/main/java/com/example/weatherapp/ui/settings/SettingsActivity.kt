@@ -19,7 +19,7 @@ import com.example.weatherapp.data.model.CityData
 import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import java.io.InputStreamReader
 
-class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener {
+class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListener, FavoriteCitiesAdapter.OnFavoriteCityClickListener {
     private lateinit var searchV : SearchView
     private lateinit var searchRV : RecyclerView
 
@@ -29,6 +29,8 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
     private lateinit var citySearchAdapter: CitySearchAdapter
 
     private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
+
+    private val intent = Intent()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +47,69 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         setupRecyclerView()
         setupRadioGroup()
         setupSearchView()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onCityClick(cityId: Int) {
+        Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
+        intent.putExtra("chosenCityId", cityId)
+    }
+
+    override fun onFavoriteCityClick(cityId: Int) {
+        Log.d("SettingsActivity", "onFavoriteCityClick: cityId: $cityId")
+        intent.putExtra("chosenCityId", cityId)
+    }
+
+
+    private fun setupBindings() {
+        searchV = binding.searchView
+        searchRV = binding.searchRecyclerView
+    }
+
+    private fun setupRecyclerView() {
+        val favoriteCities = weatherSettingsPreferences.loadFavoriteCities()
+        favoriteCitiesAdapter = FavoriteCitiesAdapter(favoriteCities, this)
+        binding.favoriteCitiesList.apply {
+            adapter = favoriteCitiesAdapter
+            layoutManager = LinearLayoutManager(this@SettingsActivity)
+        }
+
+        searchRV.visibility = View.GONE
+        searchRV.setHasFixedSize(true)
+        citySearchAdapter = CitySearchAdapter(ArrayList(), this)
+        binding.searchRecyclerView.apply {
+            adapter = citySearchAdapter
+            layoutManager = LinearLayoutManager(this@SettingsActivity)
+        }
+    }
+
+    private fun setupRadioGroup() {
+        when (weatherSettingsPreferences.getUnits()) {
+            "standard" -> binding.standardUnits.isChecked = true
+            "metric" -> binding.metricUnits.isChecked = true
+            "imperial" -> binding.imperialUnits.isChecked = true
+        }
+
+        binding.unitsRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val units = when (checkedId) {
+                binding.standardUnits.id -> "standard"
+                binding.metricUnits.id -> "metric"
+                binding.imperialUnits.id -> "imperial"
+                else -> "metric"
+            }
+            weatherSettingsPreferences.saveUnits(units)
+            intent.putExtra("units", units)
+        }
     }
 
     private fun setupSearchView() {
@@ -70,10 +135,6 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         })
     }
 
-    private fun setupBindings() {
-        searchV = binding.searchView
-        searchRV = binding.searchRecyclerView
-    }
 
     fun loadFilteredUniqueCities(context: Context, filter: String): ArrayList<CityData> {
         val filteredCities = ArrayList<CityData>()
@@ -109,56 +170,5 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
             }
         }
         return filteredCities
-    }
-
-    private fun setupRecyclerView() {
-        favoriteCitiesAdapter = FavoriteCitiesAdapter(emptyList())
-        binding.favoriteCitiesList.apply {
-            adapter = favoriteCitiesAdapter
-            layoutManager = LinearLayoutManager(this@SettingsActivity)
-        }
-
-        searchRV.visibility = View.GONE
-        searchRV.setHasFixedSize(true)
-        citySearchAdapter = CitySearchAdapter(ArrayList(), this)
-        binding.searchRecyclerView.apply {
-            adapter = citySearchAdapter
-            layoutManager = LinearLayoutManager(this@SettingsActivity)
-        }
-    }
-
-    private fun setupRadioGroup() {
-        when (weatherSettingsPreferences.getUnits()) {
-            "standard" -> binding.standardUnits.isChecked = true
-            "metric" -> binding.metricUnits.isChecked = true
-            "imperial" -> binding.imperialUnits.isChecked = true
-        }
-
-        binding.unitsRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val units = when (checkedId) {
-                binding.standardUnits.id -> "standard"
-                binding.metricUnits.id -> "metric"
-                binding.imperialUnits.id -> "imperial"
-                else -> "metric"
-            }
-            weatherSettingsPreferences.saveUnits(units)
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                finish()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onCityClick(cityId: Int) {
-        Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
-        val intent = Intent()
-        intent.putExtra("chosenCityId", cityId)
-        setResult(Activity.RESULT_OK, intent)
     }
 } 

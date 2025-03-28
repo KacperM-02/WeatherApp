@@ -17,18 +17,31 @@ import java.util.Locale
 class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>() {
     private var items = listOf<ForecastItem>()
     private var icons = listOf<ByteArray>()
+    private var tempUnits = String()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(newItems: ForecastResponse) {
+    fun updateItems(newItems: ForecastResponse) {
         items = newItems.list
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitIcons(iconBytesList: List<ByteArray>) {
+    fun updateIcons(iconBytesList: List<ByteArray>) {
         icons = iconBytesList
         notifyDataSetChanged()
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateTempUnits(units: String) {
+        tempUnits = when(units) {
+            "standard" -> "K"
+            "metric" -> "°C"
+            "imperial" -> "°F"
+            else -> "°C"
+        }
+        notifyDataSetChanged()
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForecastViewHolder {
         return ForecastViewHolder(
@@ -46,6 +59,7 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
 
     override fun getItemCount() = items.size
 
+
     inner class ForecastViewHolder(
         private val binding: ItemForecastBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -56,8 +70,8 @@ class ForecastAdapter : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>
 
             binding.day.text = binding.root.context.getString(R.string.day_format, day)
             binding.description.text = binding.root.context.getString(R.string.description_format, item.weather.firstOrNull()?.description)
-            binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp)
-            binding.feelsLike.text = binding.root.context.getString(R.string.feels_like_format, item.main.feels_like)
+            binding.temp.text = binding.root.context.getString(R.string.temperature_format, item.main.temp, tempUnits)
+            binding.feelsLike.text = binding.root.context.getString(R.string.feels_like_format, item.main.feels_like, tempUnits)
 
             val bitmap = BitmapFactory.decodeByteArray(icon, 0, icon.size)
             binding.weatherIcon.setImageBitmap(bitmap)
