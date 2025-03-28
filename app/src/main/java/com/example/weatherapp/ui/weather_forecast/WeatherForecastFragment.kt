@@ -8,14 +8,17 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.databinding.FragmentWeatherForecastBinding
 
 class WeatherForecastFragment : Fragment() {
     private var _binding: FragmentWeatherForecastBinding? = null
     private val binding get() = _binding!!
-    private val adapter = ForecastAdapter()
     private val weatherForecastViewModel: WeatherForecastViewModel by activityViewModels()
+
+    private lateinit var forecastAdapter : ForecastAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,18 +26,23 @@ class WeatherForecastFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWeatherForecastBinding.inflate(inflater, container, false)
-        binding.recyclerView.adapter = adapter
+        forecastAdapter = ForecastAdapter()
+        binding.recyclerView.apply {
+            adapter = forecastAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+
         setupObservers()
         return binding.root
     }
 
     private fun setupObservers() {
         val forecastObserver = Observer<ForecastResponse> { forecast ->
-            adapter.updateItems(forecast)
+            forecastAdapter.updateItems(forecast)
         }
 
         val weatherIconsListObserver = Observer<List<ByteArray>> { iconBytesList ->
-            adapter.updateIcons(iconBytesList)
+            forecastAdapter.updateIcons(iconBytesList)
         }
 
         val isLoadingObserver = Observer<Boolean> { isLoading ->
@@ -56,7 +64,7 @@ class WeatherForecastFragment : Fragment() {
         }
 
         val tempUnitsObserver = Observer<String> { tempUnits ->
-            adapter.updateTempUnits(tempUnits)
+            forecastAdapter.updateTempUnits(tempUnits)
         }
 
         weatherForecastViewModel.forecast.observe(viewLifecycleOwner, forecastObserver)

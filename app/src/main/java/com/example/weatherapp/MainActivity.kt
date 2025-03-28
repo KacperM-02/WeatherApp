@@ -24,7 +24,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
-import android.widget.ListView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -39,7 +38,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherPreferences: WeatherPreferences
     private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
-    private lateinit var listView: ListView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private var units = String()
 
@@ -112,6 +110,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
                 || super.onSupportNavigateUp()
     }
 
+
     override fun onRefresh() {
         swipeRefreshLayout.isRefreshing = false
         fetchWeatherData(weatherPreferences.getCityId())
@@ -124,7 +123,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         weatherPreferences = WeatherPreferences(this)
         weatherSettingsPreferences = WeatherSettingsPreferences(this)
         units = weatherSettingsPreferences.getUnits()
-        listView = binding.listView
         swipeRefreshLayout = binding.swiperefresh
         swipeRefreshLayout.setOnRefreshListener(this)
     }
