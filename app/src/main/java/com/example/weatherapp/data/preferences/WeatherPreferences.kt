@@ -50,7 +50,7 @@ class WeatherPreferences(context: Context) {
     }
 
     fun getCityId(): Int {
-        return preferences.getInt("city_id", 756135)
+        return preferences.getInt("chosen_city_id", 756135)
     }
 
 

@@ -58,11 +58,13 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val chosenCityId = result.data?.getIntExtra("chosenCityId", -1)
             val units = result.data?.getStringExtra("units")
-            if(units != null && this.units != units) {
+            if ((units != null && this.units != units) && (chosenCityId != null && chosenCityId != -1)) {
+                this.units = units
+                fetchWeatherData(chosenCityId)
+            } else if (units != null && this.units != units) {
                 this.units = units
                 fetchWeatherData(weatherPreferences.getCityId())
-            }
-            if (chosenCityId != null && chosenCityId != -1) {
+            } else if (chosenCityId != null && chosenCityId != -1) {
                 fetchWeatherData(chosenCityId)
             }
         }
