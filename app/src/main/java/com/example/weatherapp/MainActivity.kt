@@ -24,8 +24,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import android.widget.ListView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.weatherapp.data.model.ForecastResponse
 import com.example.weatherapp.data.model.WeatherResponse
 import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
@@ -33,10 +35,12 @@ import com.example.weatherapp.ui.weather_details.WeatherDetailsViewModel
 import com.example.weatherapp.ui.weather_forecast.WeatherForecastViewModel
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherPreferences: WeatherPreferences
     private lateinit var weatherSettingsPreferences: WeatherSettingsPreferences
+    private lateinit var listView: ListView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private var units = String()
 
     private val weatherDataViewModel : WeatherDataViewModel by viewModels()
@@ -108,6 +112,11 @@ class MainActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
+    override fun onRefresh() {
+        swipeRefreshLayout.isRefreshing = false
+        fetchWeatherData(weatherPreferences.getCityId())
+    }
+
 
     private fun setupFields() {
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -115,6 +124,9 @@ class MainActivity : AppCompatActivity() {
         weatherPreferences = WeatherPreferences(this)
         weatherSettingsPreferences = WeatherSettingsPreferences(this)
         units = weatherSettingsPreferences.getUnits()
+        listView = binding.listView
+        swipeRefreshLayout = binding.swiperefresh
+        swipeRefreshLayout.setOnRefreshListener(this)
     }
 
     private fun fetchInitialData() {
