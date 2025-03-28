@@ -1,36 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    >
 
     <TextView
         android:id="@+id/chooseCity"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/choose_city"
+        android:textSize="16sp"
+        android:textStyle="bold"
+
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/searchView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-
-        android:text="@string/choose_city"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        />
 
     <SearchView
         android:id="@+id/searchView"
         android:iconifiedByDefault="false"
         android:queryHint="Search..."
 
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/chooseCity"
-        app:layout_constraintBottom_toTopOf="@id/favoriteCitiesLabel"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchRecyclerView"
@@ -38,23 +37,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/searchView"
-        app:layout_constraintBottom_toTopOf="@id/favoriteCitiesLabel"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        />
 
     <TextView
         android:id="@+id/favoriteCitiesLabel"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/favourite_cities"
+        android:textSize="16sp"
+        android:textStyle="bold"
+
         app:layout_constraintTop_toBottomOf="@id/searchRecyclerView"
-        app:layout_constraintBottom_toTopOf="@id/favoriteCitiesList"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-
-        android:text="@string/favourite_cities"
-        android:textStyle="bold"
-        android:textSize="16sp"/>
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favoriteCitiesList"
@@ -62,28 +61,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/favoriteCitiesLabel"
-        app:layout_constraintBottom_toTopOf="@id/units"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        />
 
     <TextView
         android:id="@+id/units"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/units"
+        android:textSize="16sp"
+        android:textStyle="bold"
+
         app:layout_constraintTop_toBottomOf="@id/favoriteCitiesList"
-        app:layout_constraintBottom_toTopOf="@id/unitsRadioGroup"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-
-        android:text="@string/units"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        />
 
     <RadioGroup
         android:id="@+id/unitsRadioGroup"
 
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/units"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -93,23 +92,26 @@
 
         <RadioButton
             android:id="@+id/standardUnits"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="@string/standard" />
+            android:text="@string/standard"
+            />
 
         <RadioButton
             android:id="@+id/metricUnits"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="@string/metric" />
+            android:text="@string/metric"
+            />
 
         <RadioButton
             android:id="@+id/imperialUnits"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="@string/imperial" />
+            android:text="@string/imperial"
+            />
     </RadioGroup>
 </androidx.constraintlayout.widget.ConstraintLayout>

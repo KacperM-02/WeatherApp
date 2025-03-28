@@ -26,7 +26,7 @@ class FavoriteCitiesAdapter(
 
 
     interface OnFavoriteCityClickListener {
-        fun onFavoriteCityClick(cityId: Int)
+        fun onFavoriteCityClick(cityName:String, cityId: Int)
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -36,7 +36,7 @@ class FavoriteCitiesAdapter(
             view.setOnClickListener {
                 val position: Int = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onFavoriteCityClickListener.onFavoriteCityClick(cities.values.toList()[position])
+                    onFavoriteCityClickListener.onFavoriteCityClick(cities.keys.toList()[position], cities.values.toList()[position])
                 }
             }
         }
