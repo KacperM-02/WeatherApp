@@ -141,7 +141,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         val filteredCities = ArrayList<CityData>()
         val seenNames = mutableSetOf<String>()
 
-        context.assets.open("city_list.json").use { inputStream ->
+        context.assets.open("city.list.json").use { inputStream ->
             InputStreamReader(inputStream, "UTF-8").use { isr ->
                 JsonReader(isr).use { reader ->
                     reader.beginArray()  // Rozpoczęcie czytania tablicy JSON
