@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     >
 
     <TextView
@@ -17,6 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="16dp"
         />
 
     <SearchView
@@ -53,6 +55,7 @@
         app:layout_constraintTop_toBottomOf="@id/searchRecyclerView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="16dp"
         />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -65,53 +68,75 @@
         app:layout_constraintRight_toRightOf="parent"
         />
 
-    <TextView
-        android:id="@+id/units"
-
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/units"
-        android:textSize="16sp"
-        android:textStyle="bold"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
 
         app:layout_constraintTop_toBottomOf="@id/favoriteCitiesList"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        />
-
-    <RadioGroup
-        android:id="@+id/unitsRadioGroup"
-
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/units"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         >
 
-        <RadioButton
-            android:id="@+id/standardUnits"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="@string/standard"
+        <TextView
+            android:id="@+id/units"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/units"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+
+            app:layout_constraintBottom_toTopOf="@id/unitsRadioGroup"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
             />
 
-        <RadioButton
-            android:id="@+id/metricUnits"
+        <RadioGroup
+            android:id="@+id/unitsRadioGroup"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="@string/metric"
-            />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
 
-        <RadioButton
-            android:id="@+id/imperialUnits"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="@string/imperial"
-            />
-    </RadioGroup>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            >
+
+            <RadioButton
+                android:id="@+id/standardUnits"
+                android:text="@string/standard"
+                android:textAlignment="center"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                />
+
+            <RadioButton
+                android:id="@+id/metricUnits"
+                android:text="@string/metric"
+                android:textAlignment="center"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                />
+
+            <RadioButton
+                android:id="@+id/imperialUnits"
+                android:textAlignment="center"
+                android:text="@string/imperial"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                />
+        </RadioGroup>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
