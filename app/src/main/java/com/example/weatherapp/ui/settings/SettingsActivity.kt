@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.JsonReader
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
@@ -60,14 +59,16 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         }
     }
 
-    override fun onCityClick(cityId: Int) {
-        Log.d("SettingsActivity", "onCityClick: cityId: $cityId")
+    override fun onCityClick(cityName: String, cityId: Int) {
+        searchV.setQuery("", false)
+        searchRV.visibility = View.GONE
         intent.putExtra("chosenCityId", cityId)
+        Toast.makeText(this, "City selected: $cityName", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onFavoriteCityClick(cityId: Int) {
-        Log.d("SettingsActivity", "onFavoriteCityClick: cityId: $cityId")
+    override fun onFavoriteCityClick(cityName: String, cityId: Int) {
         intent.putExtra("chosenCityId", cityId)
+        Toast.makeText(this, "City selected: $cityName", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -140,7 +141,7 @@ class SettingsActivity : AppCompatActivity(), CitySearchAdapter.OnCityClickListe
         val filteredCities = ArrayList<CityData>()
         val seenNames = mutableSetOf<String>()
 
-        context.assets.open("city_list.json").use { inputStream ->
+        context.assets.open("city.list.json").use { inputStream ->
             InputStreamReader(inputStream, "UTF-8").use { isr ->
                 JsonReader(isr).use { reader ->
                     reader.beginArray()  // Rozpoczęcie czytania tablicy JSON

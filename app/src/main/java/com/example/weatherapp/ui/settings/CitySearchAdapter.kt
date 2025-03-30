@@ -20,7 +20,7 @@ class CitySearchAdapter(
     }
 
     interface OnCityClickListener {
-        fun onCityClick(cityId: Int)
+        fun onCityClick(cityName: String, cityId: Int)
     }
 
     override fun getItemCount(): Int {
@@ -46,7 +46,8 @@ class CitySearchAdapter(
             itemView.setOnClickListener {
                 val position: Int = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onCityClickListener.onCityClick(citiesList[position].id)
+                    val chosenCityName = "%s, %s".format(citiesList[position].name, citiesList[position].country)
+                    onCityClickListener.onCityClick(chosenCityName, citiesList[position].id)
                 }
             }
         }
