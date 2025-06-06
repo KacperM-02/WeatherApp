@@ -32,7 +32,7 @@ import com.example.weatherapp.data.model.WeatherResponse
 import com.example.weatherapp.data.preferences.WeatherSettingsPreferences
 import com.example.weatherapp.ui.weather_details.WeatherDetailsViewModel
 import com.example.weatherapp.ui.weather_forecast.WeatherForecastViewModel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var binding: ActivityMainBinding
@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             }
         }
     }
+
+    private var refreshJob: Job? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,6 +116,22 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     override fun onRefresh() {
         swipeRefreshLayout.isRefreshing = false
         fetchWeatherData(weatherPreferences.getCityId())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        try {
+            startPeriodicRefresh()
+        } catch(e: Exception)
+        {
+            weatherDataViewModel.updateErrorValue("Error during coroutines: ${e.message}")
+            Toast.makeText(this@MainActivity, "Error during coroutines: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopPeriodicRefresh()
     }
 
 
@@ -243,5 +261,25 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         weatherPreferences.saveWeatherIcon(weatherIcon)
         weatherPreferences.saveForecastResponse(filteredForecastResponse)
         weatherPreferences.saveForecastIcons(forecastIcons)
+    }
+
+    private fun startPeriodicRefresh() {
+        refreshJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                val lastFetchTime = weatherPreferences.getWeatherTimestamp()
+                val currentTime = System.currentTimeMillis()
+
+                if(isInternetAvailable() && currentTime - lastFetchTime > 15 * 60 * 1000)
+                {
+                    fetchWeatherData(weatherPreferences.getCityId())
+                    delay(15 * 60 * 1000)
+                }
+                delay(1 * 60 * 1000)
+            }
+        }
+    }
+
+    private fun stopPeriodicRefresh() {
+        refreshJob?.cancel()
     }
 }
